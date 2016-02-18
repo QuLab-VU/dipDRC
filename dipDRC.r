@@ -1,3 +1,13 @@
+getPackageIfNeeded <- function(pkg) {
+  if (!require(pkg, character.only=TRUE))
+    install.packages(pkgs=pkg, dependencies=TRUE)
+}
+
+pkgs	<-	c("drc", "car")
+
+sapply(pkgs,getPackageIfNeeded)
+
+
 require(drc)			# for dose-response curves; version 2.5-12
 require(car)			# for linear detailed regression analysis
 
@@ -331,6 +341,7 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 		{
 			plot(out[[ucd]],main=ucd, ...)
 			abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
+			abline(h=0, col=grey(0.5), lty=2)
 		}
 	}
 	if(plotIt & toFile) dev.off()
