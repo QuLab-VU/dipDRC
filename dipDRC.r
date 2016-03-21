@@ -114,12 +114,14 @@ plotGC			<-	function(dtp, new.win=TRUE, add.lines=FALSE, get.DIP=FALSE,...)
 	par(mar=c(4,3,2,0.5))
 	time.name		<-	colnames(dtp)[grep('[Tt]ime',colnames(dtp))]
 	date.name		<-	colnames(dtp)[grep('[Dd]ate',colnames(dtp))]
+	drug.name		<-	colnames(dtp)[grep('[Dd]rug',colnames(dtp))]
+	if(length(drug.name)==0)	drug.name		<-	colnames(dtp)[grep('[Tt]reatment',colnames(dtp))]
 	
 	cl	<-	unique(dtp[,grep('[Ll]ine',colnames(dtp))])
 	u.dates		<-	unique(dtp[,date.name])
 	date.col	<-	topo.colors(length(u.dates))
 
-	plot(dtp[,c(time.name,'nl2')], main=paste(cl,unique(dtp$drug)), xlab="", ylab="", xlim=c(0,140), ylim=c(-1,5.5), type='n',...)
+	plot(dtp[,c(time.name,'nl2')], main=paste(cl,unique(dtp[,drug.name])), xlab="", ylab="", xlim=c(0,140), ylim=c(-1,5.5), type='n',...)
 	if(get.DIP) DIP <- numeric()
 	for(co in unique(dtp$conc)) 
 	{
@@ -312,26 +314,31 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE,...)
 {	
 	if(plotIt & toFile)	pdf('dipDRC_graphs.pdf')
+	concName	<-	var[grep('[Cc]onc',var)]
+	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
 	dtf$u.cond		<-	makeUCond(dtf,var)
-	dtf$cell.drug	<-	makeUCond(dtf,c('cell.line','drug'))
+	dtf$cell.drug	<-	makeUCond(dtf,var[1:2])
 	out	<-	list()
 	for(ucd	in unique(dtf$cell.drug))
 	{
 		temp		<-	dtf[dtf$cell.drug==ucd,]
-		Uconc		<-	unique(temp$conc)
+		Uconc		<-	unique(temp[,concName])
 		dip.rates	<-	temp[match(unique(temp$u.cond),temp$u.cond),var]
 		rownames(dip.rates)	<-	NULL
 		dip.rates	<-	cbind(dip=NA,dip.rates)
-		for(r in unique(temp$expt.date))
+		for(r in unique(temp[,exptID]))
 		{
 			for(co in unique(Uconc)) 
-				dip.rates[dip.rates$conc==co & dip.rates$expt.date==r,'dip']	<-	
-					findDIP(sumRep(	temp[temp$conc==co & temp$expt.date==r,'cell.count'],
-									temp[temp$conc==co & temp$expt.date==r,'time']), print.dip=print.dip)$dip
+			{
+				dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
+					findDIP(sumRep(	temp[temp[,concName]==co & temp[,exptID]==r,yName],
+									temp[temp[,concName]==co & temp[,exptID]==r,xName]), print.dip=print.dip)$dip
+			}
 		}
-		dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates$conc==min(dip.rates$conc),'dip']
+		dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
 		if(norm)
 		{	
+			# need to make formula using correct names
 			out[[ucd]] <- tryCatch({drm(norm.dip~conc,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
 		} else
 		{
