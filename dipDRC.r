@@ -311,7 +311,7 @@ sumRep	<-	function(count,ids)
 # Function to extract DIP rate across multiple condititons 
 # and calculate a 4-param logistic fit
 dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug','conc','expt.date'), 
-	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE,...)
+	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, showEC50=TRUE, ...)
 {	
 	if(plotIt & toFile)	pdf('dipDRC_graphs.pdf')
 	concName	<-	var[grep('[Cc]onc',var)]
@@ -347,7 +347,7 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 		if(plotIt & !is.na(out[[ucd]][1]))
 		{
 			plot(out[[ucd]],main=ucd, ...)
-			abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
+			if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
 			abline(h=0, col=grey(0.5), lty=2)
 		}
 	}
