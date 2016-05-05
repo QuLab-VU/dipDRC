@@ -109,7 +109,7 @@ makeUCond	<-	function(dat,var)
 }
 
 
-plotGC_DIPfit	<-	function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
+plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
 {
 	stuff	<-	list(...)
 	if('o' %in% names(stuff) & tit=='rmse')	tit <- paste(tit,'with o =',stuff[['o']])
@@ -128,18 +128,19 @@ plotGC_DIPfit	<-	function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.lin
 	if(newDev &toFile)	pdf(file=fn, width=7.5, height=3)
 	if(newDev) par(mfrow=c(1,3), oma=c(0,0,1,0))
 
-	plot(dtp, main=NA, xlab=NA, ylab=NA)
+	plot(dip$data, main=NA, xlab=NA, ylab=NA)
 	mtext(side=1, 'Time (h)', font=2, line=2)
 	mtext(side=2, 'log2(cell number)', font=2, line=2)
 	dip.val	<-	round(dip$dip,4)
 	dip.95conf	<-	round(abs(dip.val-confint(dip$best.model)[2,1]),5)
+	dip.range <- c(round(dip$start.time,1),max(dtp[,1]))
 	legend("bottomright", c(paste('DIP =',dip.val),paste0('  ±',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
-	curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=0,to=150,add=TRUE, col='red', lwd=3)
+	curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=dip.range[1],to=dip.range[2],add=TRUE, col='red', lwd=3)
 	
-	try(polygon(	x=c(dip$start.time, 150, 150),
+	try(polygon(	x=c(dip$start.time, dip.range[2], dip.range[2]),
 		y=c(coef(dip$best.model)[1]+coef(dip$best.model)[2]*dip$start.time,
-		coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*150,
-		coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*150), col=adjustcolor("gray",alpha.f=0.4), density=NA))
+		coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*dip.range[2],
+		coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*dip.range[2]), col=adjustcolor("gray",alpha.f=0.4), density=NA))
 	
 	abline(v=dip$start.time, lty=2)
 	if(add.line)	abline(v=dip2$start.time, lty=3, col='red')
