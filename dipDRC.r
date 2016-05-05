@@ -299,11 +299,12 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 		dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
 		if(norm)
 		{	
-			# need to make formula using correct names
-			out[[ucd]] <- tryCatch({drm(norm.dip~conc,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
+			f <- formula(paste0('norm.dip ~ ',concName))
+			out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
 		} else
 		{
-			out[[ucd]] <- tryCatch({drm(dip~conc,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
+			f <- formula(paste0('dip ~ ',concName))
+			out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
 		}
 		if(plotIt & !is.na(out[[ucd]][1]))
 		{
