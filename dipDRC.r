@@ -108,8 +108,47 @@ makeUCond	<-	function(dat,var)
 	apply(dat[,var],1, function(x) paste(x, collapse='_'))
 }
 
+plotGC			<-	function(dtp, new.win=TRUE, add.lines=FALSE, get.DIP=FALSE,...)
+{
+	if(new.win)	dev.new(width=3, height=3)
+	par(mar=c(4,3,2,0.5))
+	time.name		<-	colnames(dtp)[grep('[Tt]ime',colnames(dtp))]
+	date.name		<-	colnames(dtp)[grep('[Dd]ate',colnames(dtp))]
+	drug.name		<-	colnames(dtp)[grep('[Dd]rug',colnames(dtp))]
+	if(length(drug.name)==0)	drug.name		<-	colnames(dtp)[grep('[Tt]reatment',colnames(dtp))]
+	
+	cl	<-	unique(dtp[,grep('[Ll]ine',colnames(dtp))])
+	u.dates		<-	unique(dtp[,date.name])
+	date.col	<-	topo.colors(length(u.dates))
 
-plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
+	plot(dtp[,c(time.name,'nl2')], main=paste(cl,unique(dtp[,drug.name])), xlab="", ylab="", xlim=c(0,140), ylim=c(-1,5.5), type='n',...)
+	if(get.DIP) DIP <- numeric()
+	for(co in unique(dtp$conc)) 
+	{
+		if(get.DIP) DIP <- append(DIP,findDIP(dtp[dtp$conc==co,c(time.name,'nl2')])$DIP,dat.type='nl2')
+
+		for(uid in unique(dtp[dtp$conc==co,]$uid))
+		{
+			dfl	<-	dtp[dtp$uid==uid & dtp$conc==co,]
+			i	<-	match(unique(dfl$conc), unique(dtp$conc))
+			lines(dfl[,time.name], dfl[,'nl2'], col=date.col[match(dfl[,date.name],u.dates)])
+			if(add.lines)	curve(x*DIP[i]+int[i], from=72, to=tail(dtp[dtp$conc==co,time.name],1), 
+				col='green', lwd=2, add=TRUE)
+			text(tail(dfl[,time.name],1), tail(dfl$nl2,1), paste(co,'µM'), cex=0.75, pos=4)
+		}
+	}
+	mtext('Time (h)', side=1, font=2, line=2)
+	mtext('Population doublings', side=2, font=2, line=2)
+	legend('topleft',legend=u.dates, col=date.col, lwd=1,bty='n',cex=0.75)
+	if(get.DIP) 
+	{
+		out	<-	data.frame(DIP=DIP, cellLine=cl, conc=unique(dtp$conc))
+		rownames(out)	<-	NULL
+	} else { out <- NA }
+	invisible(out)
+}
+
+plotGC_DIPfit	<-	function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
 {
 	stuff	<-	list(...)
 	if('o' %in% names(stuff) & tit=='rmse')	tit <- paste(tit,'with o =',stuff[['o']])
@@ -128,19 +167,18 @@ plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.lin
 	if(newDev &toFile)	pdf(file=fn, width=7.5, height=3)
 	if(newDev) par(mfrow=c(1,3), oma=c(0,0,1,0))
 
-	plot(dip$data, main=NA, xlab=NA, ylab=NA)
+	plot(dtp, main=NA, xlab=NA, ylab=NA)
 	mtext(side=1, 'Time (h)', font=2, line=2)
 	mtext(side=2, 'log2(cell number)', font=2, line=2)
 	dip.val	<-	round(dip$dip,4)
 	dip.95conf	<-	round(abs(dip.val-confint(dip$best.model)[2,1]),5)
-	dip.range <- c(round(dip$start.time,1),max(dtp[,1]))
 	legend("bottomright", c(paste('DIP =',dip.val),paste0('  ±',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
-	curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=dip.range[1],to=dip.range[2],add=TRUE, col='red', lwd=3)
+	curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=0,to=150,add=TRUE, col='red', lwd=3)
 	
-	try(polygon(	x=c(dip$start.time, dip.range[2], dip.range[2]),
+	try(polygon(	x=c(dip$start.time, 150, 150),
 		y=c(coef(dip$best.model)[1]+coef(dip$best.model)[2]*dip$start.time,
-		coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*dip.range[2],
-		coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*dip.range[2]), col=adjustcolor("gray",alpha.f=0.4), density=NA))
+		coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*150,
+		coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*150), col=adjustcolor("gray",alpha.f=0.4), density=NA))
 	
 	abline(v=dip$start.time, lty=2)
 	if(add.line)	abline(v=dip2$start.time, lty=3, col='red')
@@ -300,12 +338,11 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 		dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
 		if(norm)
 		{	
-			f <- formula(paste0('norm.dip ~ ',concName))
-			out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
+			# need to make formula using correct names
+			out[[ucd]] <- tryCatch({drm(norm.dip~conc,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
 		} else
 		{
-			f <- formula(paste0('dip ~ ',concName))
-			out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
+			out[[ucd]] <- tryCatch({drm(dip~conc,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
 		}
 		if(plotIt & !is.na(out[[ucd]][1]))
 		{
