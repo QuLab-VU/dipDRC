@@ -31,8 +31,7 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('conc','expt.dat
 	}
 	if(plotIt & !is.na(out[[ucd]][1]))
 	{
-		plot(out[[ucd]], ...)
-		if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
+		plot.dipDRC(out[[ucd]], ...)
 		abline(h=0, col=grey(0.5), lty=2)
 	}
 
@@ -47,9 +46,10 @@ plot.dipDRC	<-	function(drm, cell.line="Cell line", drug="drug", type='confidenc
 		message('DRM object not available to plot')
 		return(NA)
 	}
-	if(!exists(title)
+	ifelse(is.null(main), tit <- paste(cell.line,drug,sep='_'), tit <- main)
 	dtp	<-	drm[[names(drm) == paste(cell.line,drug,sep='_')]]
-	plot(drm, main=paste()
+	plot(drm, main=tit, ...)
+	if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
 	abline(h=0, col=grey(0.5), lty=2)
 }
 
@@ -63,84 +63,18 @@ rmsd	<-	function(resid)
 }
 
 
-densMax <- function(times, counts, ids, min.ar2=0.99)
+nEach	<-	function(ids)
 {
-# To determine whether cell counts are exponentially increasing throughout the entire time span
-# if not, the time at which linearity fails is returned
-# assumes all data are from the same condition (i.e. same cell line)
-# ids = unique identifier for each sample (usually a well from an experiment)
-# assumes counts in linear scale (i.e. direct cell counts)
-
-	m		<-	numeric()
-	
-	for(i in unique(ids))
-	{	
-		ttf <- times[ids==i]
-		ctf <- log2(counts[ids==i])
-		
-		if(length(ttf) < 5)
-		{
-			message(paste('Need at least 5 data points for ',i))
-			next
-		}
-
-		# m.ad = model with all time points
-		m.ad	<-	lm(ctf ~ ttf)
-		ar2	<-	summary(m.ad)$adj.r.squared
-
-		for(l in (length(ttf)):5)
-		{
-		# include data through the 'l'th time point
-			x <- ttf[seq(l)]
-			y <- ctf[seq(l)]
-		# capture position of max counts when adjusted R^2 value >= min.ar2
-			if(summary(lm(y ~ x))$adj.r.squared >= min.ar2) break
-		}
-#		message(paste(i,l,2^ctf[l]))
-		max.dens <- 2^ctf[l]
-
-		m <- append(m,max.dens)
-	}
-	return(m)
+	out	<-	integer()
+	for(i in unique(ids)) out <- append(out,length(ids[ids==i]))
+	names(out) <- unique(ids)
+	out
 }
 
-findCtrlDIP <- function(times, counts, ids, min.ar2=0.99)
+firstInstPos	<-	function(vec)
 {
-# To determine whether cell counts are exponentially increasing throughout the entire time span
-# times and counts for which adjusted R2 value is >= min.ar2 argument are returned
-# ids = unique identifier for each sample (usually a well from an experiment)
-# assumes counts in linear scale (i.e. direct cell counts)
-	m			<-	numeric()
-	dip			<-	numeric()
-	
-	for(i in unique(ids))
-	{	
-		ttf <- times[ids==i]
-		ctf <- log2(counts[ids==i])
-		
-		if(length(ttf) < 5)
-		{
-			message(paste('Need at least 5 data points for ',i))
-			next
-		}
-
-		# m.ad = model with all time points
-		m.ad	<-	lm(ctf ~ ttf)
-		ar2	<-	summary(m.ad)$adj.r.squared
-
-		for(l in (length(ttf)):5)
-		{
-		# include data through the 'l'th time point
-			x <- ttf[seq(l)]
-			y <- ctf[seq(l)]
-		# capture last position where adjusted R^2 value >= min.ar2
-			if(summary(lm(y ~ x))$adj.r.squared >= min.ar2) break
-		}
-		
-		if(summary(lm(y ~ x))$adj.r.squared < min.ar2)
-		{ next } else { dip <- append(dip,coef(lm(y ~ x))[2]) }
-	}
-	dip
+	ids	<-	unique(vec)
+	match(ids, vec)
 }
 
 filterCtrlData <- function(times, counts, ids, min.ar2=0.99)
@@ -153,8 +87,6 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99)
 	dtk.times	<-	integer()
 	dtk.counts	<-	integer()
 	dtk.ids		<-	character()
-	for(i in unique(ids)) x <- append(x,length(ids[ids==i]))
-	min.pts		<-	max(x)
 	
 	for(i in unique(ids))
 	{	
@@ -179,13 +111,12 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99)
 		# capture last position where adjusted R^2 value >= min.ar2
 			if(summary(lm(y ~ x))$adj.r.squared >= min.ar2) break
 		}
-		
+
 		if(summary(lm(y ~ x))$adj.r.squared < min.ar2)
 		{
-			message(paste('ids =',i,'is not linear within ar2 =',min.ar2))
+			message(paste('The first 5 pts of ids =',i,'is not linear within ar2 =',min.ar2))
 			next
 		} else { 
-			
 			dtk.times <- append(dtk.times,x)
 			dtk.counts <- append(dtk.counts,floor(2^y))
 			dtk.ids <- append(dtk.ids, rep(i,length(x)))
@@ -194,3 +125,76 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99)
 	
 	data.frame(times=dtk.times,counts=dtk.counts,ids=dtk.ids)
 }
+
+findCtrlDIP <- function(times, counts, ids, type='mean')
+{
+# data should be filtered first using filterCtrlData()
+# ids = unique identifier for each sample (usually a well from an experiment)
+# assumes counts in linear scale (i.e. direct cell counts)
+
+	#	
+	# types
+	#
+	# max: identify the sample(s) with the most data points, sum them and fit a lm
+	# sum: use all samples trimmed to the fewest data points, sum them and fit a lm
+	# mean: use all samples, fitting lm separately to each and return the average
+
+	dip			<-	numeric()
+	dip.temp	<-	numeric()
+
+	if(type=='mean')
+	{
+		for(i in unique(ids))
+		{	
+			x <- times[ids==i]
+			y <- log2(counts[ids==i])
+
+			dip.temp <- append(dip.temp,coef(lm(y ~ x))[2])
+			names(dip.temp)[length(names(dip.temp))]	<-	i
+		}
+		dip <- mean(dip.temp)
+		dip	<-	append(dip, sd(dip.temp)/sqrt(length(dip.temp)))
+		names(dip)	<-	c('mean.dip','std.err')
+		
+		count.t0	<-	floor(mean(sapply(unique(ids), FUN=function(x) head(counts[ids==x],1))))
+		dts.times	<-	unique(times)
+		dts.counts	<-	c(count.t0,floor(count.t0*2^(dip[1]*dts.times[-1])))
+	}
+	
+	if(type=='max')
+	{
+		n			<-	nEach(ids)
+		n.max		<-	max(n)
+		max.ids		<-	names(n)[n==n.max]
+		dts.times	<-	times[ids %in% max.ids]
+		dts.counts	<-	counts[ids %in% max.ids]
+		a			<-	aggregate(dts.counts ~ dts.times, FUN=sum)
+		m			<-	lm(log2(dts.counts) ~ dts.times, data=a)
+		dip			<-	coef(m)[2]
+		dip			<-	append(dip, summary(m)$coefficients[2,2])
+		names(dip)	<-	c('max.dip','std.err')
+		dts.times	<-	a$dts.times
+		dts.counts	<-	a$dts.counts
+	}
+	
+	if(type=='sum')
+	{
+		n			<-	nEach(ids)
+		n.min		<-	min(n)
+		dts.times	<-	as.numeric(sapply(unique(ids), FUN=function(x) head(times[ids==x],n.min)))
+		dts.counts	<-	as.numeric(sapply(unique(ids), FUN=function(x) head(counts[ids==x],n.min)))
+		a			<-	aggregate(dts.counts ~ dts.times, FUN=sum)
+		m			<-	lm(log2(dts.counts) ~ dts.times, data=a)
+		dip			<-	coef(m)[2]
+		dip			<-	append(dip, summary(m)$coefficients[2,2])
+		names(dip)	<-	c('sum.dip','std.err')
+		dts.times	<-	a$dts.times
+		dts.counts	<-	a$dts.counts
+	}
+	
+	out <- list(data.frame(times=dts.times,counts=dts.counts,ids=as.character(NA)),dip)
+	names(out)	<- c('data','dip')
+	
+	out
+}
+
