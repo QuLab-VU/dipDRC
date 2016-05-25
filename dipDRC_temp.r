@@ -126,7 +126,9 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99)
 	data.frame(times=dtk.times,counts=dtk.counts,ids=dtk.ids)
 }
 
-findCtrlDIP <- function(times, counts, ids, type='mean')
+findCtrlDIP <- function(times, counts, ids, 
+	col.names=c('Time','Cell.counts','Well'),
+	type='mean')
 {
 # data should be filtered first using filterCtrlData()
 # ids = unique identifier for each sample (usually a well from an experiment)
@@ -192,7 +194,12 @@ findCtrlDIP <- function(times, counts, ids, type='mean')
 		dts.counts	<-	a$dts.counts
 	}
 	
-	out <- list(data.frame(times=dts.times,counts=dts.counts,ids=as.character(NA)),dip)
+	blank.ids			<-	as.character(rep(NA,length(dts.times)))
+	
+	out.data	<-	data.frame(dts.times,dts.counts,blank.ids)
+	colnames(out.data)	<-	col.names
+	
+	out <- list(out.data,dip)
 	names(out)	<- c('data','dip')
 	
 	out
