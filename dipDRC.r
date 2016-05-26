@@ -351,14 +351,16 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('conc','expt.dat
 	invisible(out)
 }
 
-plot.dipDRC	<-	function(drm, cell.line="Cell line", drug="drug", type='confidence', showEC50=TRUE, ...)
+plot.dipDRC	<-	function(drm, cell.line="CellLine", drug="drug", type='confidence', showEC50=TRUE, ...)
 {
 	if(is.na(drm[1])) 
 	{
 		message('DRM object not available to plot')
 		return(NA)
 	}
-	ifelse(is.null(main), tit <- paste(cell.line,drug,sep='_'), tit <- main)
+	stuff	<-	list(...)
+	
+	ifelse(main %in% names(stuff), tit <- stuff[['main']], tit <- paste(cell.line,drug,sep='_'))
 	dtp	<-	drm[[names(drm) == paste(cell.line,drug,sep='_')]]
 	plot(drm, main=tit, ...)
 	if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
