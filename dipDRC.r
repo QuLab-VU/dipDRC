@@ -310,49 +310,58 @@ sumRep	<-	function(count,ids)
 
 # Function to extract DIP rate across multiple condititons 
 # and calculate a 4-param logistic fit
-dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug','conc','expt.date'), 
+dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('conc','expt.date'), 
 	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, showEC50=TRUE, ...)
 {	
-	if(plotIt & toFile)	pdf('dipDRC_graphs.pdf')
+	if(plotIt & toFile)	pdf('dipDRC_graph.pdf')
 	concName	<-	var[grep('[Cc]onc',var)]
 	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
-	dtf$u.cond		<-	makeUCond(dtf,var)
-	dtf$cell.drug	<-	makeUCond(dtf,var[1:2])
 	out	<-	list()
-	for(ucd	in unique(dtf$cell.drug))
+
+	Uconc		<-	unique(dtf[,concName])
+	dip.rates	<-	dtf[,var]
+	rownames(dip.rates)	<-	NULL
+	dip.rates	<-	cbind(dip=NA,dip.rates)
+	for(r in unique(dtf[,exptID]))
 	{
-		temp		<-	dtf[dtf$cell.drug==ucd,]
-		Uconc		<-	unique(temp[,concName])
-		dip.rates	<-	temp[match(unique(temp$u.cond),temp$u.cond),var]
-		rownames(dip.rates)	<-	NULL
-		dip.rates	<-	cbind(dip=NA,dip.rates)
-		for(r in unique(temp[,exptID]))
+		for(co in unique(Uconc)) 
 		{
-			for(co in unique(Uconc)) 
-			{
-				dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
-					findDIP(sumRep(	temp[temp[,concName]==co & temp[,exptID]==r,yName],
-									temp[temp[,concName]==co & temp[,exptID]==r,xName]), print.dip=print.dip)$dip
-			}
-		}
-		dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
-		if(norm)
-		{	
-			# need to make formula using correct names
-			out[[ucd]] <- tryCatch({drm(norm.dip~conc,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
-		} else
-		{
-			out[[ucd]] <- tryCatch({drm(dip~conc,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
-		}
-		if(plotIt & !is.na(out[[ucd]][1]))
-		{
-			plot(out[[ucd]],main=ucd, ...)
-			if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
-			abline(h=0, col=grey(0.5), lty=2)
+			dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
+				findDIP(sumRep(	temp[temp[,concName]==co & temp[,exptID]==r,yName],
+								temp[temp[,concName]==co & temp[,exptID]==r,xName]), print.dip=print.dip)$dip
 		}
 	}
+	dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
+	if(norm)
+	{	
+		f <- formula(paste0('norm.dip ~ ',concName))
+		out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
+	} else
+	{
+		f <- formula(paste0('dip ~ ',concName))
+		out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
+	}
+	if(plotIt & !is.na(out[[ucd]][1]))
+	{
+		plot.dipDRC(out[[ucd]], ...)
+		abline(h=0, col=grey(0.5), lty=2)
+	}
+
 	if(plotIt & toFile) dev.off()
 	invisible(out)
 }
 
+plot.dipDRC	<-	function(drm, cell.line="Cell line", drug="drug", type='confidence', showEC50=TRUE, ...)
+{
+	if(is.na(drm[1])) 
+	{
+		message('DRM object not available to plot')
+		return(NA)
+	}
+	ifelse(is.null(main), tit <- paste(cell.line,drug,sep='_'), tit <- main)
+	dtp	<-	drm[[names(drm) == paste(cell.line,drug,sep='_')]]
+	plot(drm, main=tit, ...)
+	if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
+	abline(h=0, col=grey(0.5), lty=2)
+}
 

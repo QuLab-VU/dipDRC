@@ -1,67 +1,3 @@
-dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('conc','expt.date'), 
-	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, showEC50=TRUE, ...)
-{	
-	if(plotIt & toFile)	pdf('dipDRC_graph.pdf')
-	concName	<-	var[grep('[Cc]onc',var)]
-	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
-	out	<-	list()
-
-	Uconc		<-	unique(dtf[,concName])
-	dip.rates	<-	dtf[,var]
-	rownames(dip.rates)	<-	NULL
-	dip.rates	<-	cbind(dip=NA,dip.rates)
-	for(r in unique(dtf[,exptID]))
-	{
-		for(co in unique(Uconc)) 
-		{
-			dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
-				findDIP(sumRep(	temp[temp[,concName]==co & temp[,exptID]==r,yName],
-								temp[temp[,concName]==co & temp[,exptID]==r,xName]), print.dip=print.dip)$dip
-		}
-	}
-	dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
-	if(norm)
-	{	
-		f <- formula(paste0('norm.dip ~ ',concName))
-		out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
-	} else
-	{
-		f <- formula(paste0('dip ~ ',concName))
-		out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
-	}
-	if(plotIt & !is.na(out[[ucd]][1]))
-	{
-		plot.dipDRC(out[[ucd]], ...)
-		abline(h=0, col=grey(0.5), lty=2)
-	}
-
-	if(plotIt & toFile) dev.off()
-	invisible(out)
-}
-
-plot.dipDRC	<-	function(drm, cell.line="Cell line", drug="drug", type='confidence', showEC50=TRUE, ...)
-{
-	if(is.na(drm[1])) 
-	{
-		message('DRM object not available to plot')
-		return(NA)
-	}
-	ifelse(is.null(main), tit <- paste(cell.line,drug,sep='_'), tit <- main)
-	dtp	<-	drm[[names(drm) == paste(cell.line,drug,sep='_')]]
-	plot(drm, main=tit, ...)
-	if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
-	abline(h=0, col=grey(0.5), lty=2)
-}
-
-# root-mean-square deviation (RMSD) of an estimator == root-mean-square error (RMSE) 
-# when the estimator is unbiased, RMSD is the square root of variance == standard error
-# RMSD represents the sample standard deviation of the differences between predicted values and observed values.
-# resid == vector or matrix of residuals (difference between the observed and predicted values)
-rmsd	<-	function(resid)
-{
-	sqrt(sum((resid)^2)/length(resid))
-}
-
 
 nEach	<-	function(ids)
 {
@@ -71,11 +7,7 @@ nEach	<-	function(ids)
 	out
 }
 
-firstInstPos	<-	function(vec)
-{
-	ids	<-	unique(vec)
-	match(ids, vec)
-}
+firstInstPos	<-	function(vec)	match(unique(vec), vec)
 
 filterCtrlData <- function(times, counts, ids, min.ar2=0.99)
 {
@@ -194,10 +126,8 @@ findCtrlDIP <- function(times, counts, ids,
 		dts.counts	<-	a$dts.counts
 	}
 	
-	blank.ids			<-	as.character(rep(NA,length(dts.times)))
-	
-	out.data	<-	data.frame(dts.times,dts.counts,blank.ids)
-	colnames(out.data)	<-	col.names
+	out.data	<-	data.frame(dts.times,dts.counts)
+	colnames(out.data)	<-	col.names[1:2]
 	
 	out <- list(out.data,dip)
 	names(out)	<- c('data','dip')
@@ -205,3 +135,143 @@ findCtrlDIP <- function(times, counts, ids,
 	out
 }
 
+controlQC	<-	function(times, counts, ids, col.names=c('Time','Cell.counts','Well'), 
+	plotIt=TRUE, ctrl.type='mean', cell.line.name="", ...)
+{
+	# expecting data to be from a single cell line
+	# will filter data for consistency with exponential growth and return
+	# a data.frame with a single set of time points and the estimated cell counts
+	# undefined arguments will be passed to plot function
+	
+	fd	<-	filterCtrlData(times, counts, ids)
+	if(plotIt)	plotGC(fd[,1],fd[,2],fd[,3],fd[,3], main=cell.line.name, ...)
+	out	<-	findCtrlDIP(fd[,1],fd[,2],fd[,3], col.names=col.names, type=ctrl.type)$data
+	if(plotIt)	lines(out[,1],log2norm(out[,2],ids=1), lwd=3)
+	invisible(out)
+}
+
+findMaxDens <- function(times, counts, ids, min.ar2=0.99)
+{
+# To determine at what density cell counts are no longer increasing exponentially
+# times and counts for which adjusted R2 value is >= min.ar2 argument are returned
+# ids = unique identifier for each sample (usually a well from an experiment)
+# assumes counts in linear scale (i.e. direct cell counts)
+	max.exp.counts	<-	integer()
+	max.ids		<-	character()
+	
+	for(i in unique(ids))
+	{	
+		ttf <- times[ids==i]
+		ctf <- log2(counts[ids==i])
+		
+		if(length(ttf) < 5)
+		{
+			message(paste('Need at least 5 data points for ',i))
+			next
+		}
+
+		for(l in 5:(length(ttf)))
+		{
+		# include data through the 'l'th time point
+			x <- ttf[seq(l)]
+			y <- ctf[seq(l)]
+		# capture last position where adjusted R^2 value <= min.ar2
+			if(summary(lm(y ~ x))$adj.r.squared <= min.ar2) break
+		}
+		
+		if(summary(lm(y ~ x))$adj.r.squared < min.ar2 & l ==5)
+		{
+			message(paste('The first 5 pts of ids =',i,'is not linear within ar2 =',min.ar2))
+			next
+		} else { 
+			max.exp.counts <- append(max.exp.counts,floor(2^y[l]))
+			max.ids <- append(max.ids, i)
+		}
+	}
+	
+	data.frame(max.exp.counts=max.exp.counts,ids=max.ids)
+}
+
+prepCountData <- function(dat, time.count.id.names=c('Time','Cell.count','Well'), 
+	max.cell.count=3000, cell.line.name=unique(dat$Cell.line))
+{
+	ctrl <- dat[dat$Drug1=='control',]
+	dat <- dat[dat$Drug1!='control',]
+	cn	<- colnames(dat)
+	if(length(cell.line.name)>1)
+	{
+		message('WARNING: Length of prepCountData cell.line.name > 1, using first value only')
+		cell.line.name <- cell.line.name[1]
+	}
+	dat[dat[time.count.id.names[2]] > max.cell.count,time.count.id.names[2]]	<-	NA
+	dat$Drug1.conc <- signif(dat$Drug1.conc,2)
+
+	# add control data
+	ctrl <- controlQC(ctrl[,time.count.id.names[1]],
+		ctrl[,time.count.id.names[2]],ctrl[,time.count.id.names[3]], col.names=time.count.id.names, plotIt=FALSE)
+	
+	temp <- tail(dat,nrow(ctrl))
+	temp[,time.count.id.names[1:2]]	<-	ctrl
+	temp[,!(colnames(temp) %in% c(time.count.id.names,'Cell.line','Date'))] <- NA
+	temp$uid <- paste0(cell.line.name,'_control')
+	temp$Drug1 <- 'control'
+	temp$Drug1.conc <- 0
+	temp[,time.count.id.names[3]] <- 'CTRL'
+	rbind(dat,temp)
+}
+
+plotGC_DIPfit2	<-	function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
+{
+	stuff	<-	list(...)
+	if('o' %in% names(stuff) & tit=='rmse')	tit <- paste(tit,'with o =',stuff[['o']])
+	dip	<-	findDIP(dtp,...)
+	add.line	<-	FALSE
+	if(add.line.met != 'none')	
+	{	
+		add.line	<-	TRUE
+		dip2 <- findDIP(dtp,met=add.line.met)
+	}
+
+	fn	<-	paste(tit,nrow(dtp),'points.pdf')
+	if('metric' %in% names(stuff))	tit <- paste(tit,stuff[['metric']])
+	
+	if(newDev & !toFile)	dev.new(width=7.5, height=3)
+	if(newDev &toFile)	pdf(file=fn, width=7.5, height=3)
+	if(newDev) par(mfrow=c(1,3), oma=c(0,0,1,0))
+
+	plot(dtp, main=NA, xlab=NA, ylab=NA)
+	mtext(side=1, 'Time (h)', font=2, line=2)
+	mtext(side=2, 'log2(cell number)', font=2, line=2)
+	dip.val	<-	round(dip$dip,4)
+	dip.95conf	<-	round(abs(dip.val-confint(dip$best.model)[2,1]),5)
+	legend("bottomright", c(paste('DIP =',dip.val),paste0('  ±',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
+	curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=0,to=150,add=TRUE, col='red', lwd=3)
+	
+	try(polygon(	x=c(dip$start.time, 150, 150),
+		y=c(coef(dip$best.model)[1]+coef(dip$best.model)[2]*dip$start.time,
+		coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*150,
+		coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*150), col=adjustcolor("gray",alpha.f=0.4), density=NA))
+	
+	abline(v=dip$start.time, lty=2)
+	if(add.line)	abline(v=dip2$start.time, lty=3, col='red')
+
+	# plotting graph of adjusted R2
+	plot(dip$eval.times,dip$ar2, ylim=c(0,1), xlab=NA, ylab=NA, main=NA)
+	mtext(side=1, 'Time (h)', font=2, line=2)
+	mtext(side=2, 'adj R2', font=2, line=2)
+	abline(v=dip$start.time, lty=2)
+	if(add.line)	abline(v=dip2$start.time, lty=3, col='red')
+	
+	# plotting graph of RMSE
+	plot(dip$eval.times,dip$rmse, ylim=c(0,0.5), xlab=NA, ylab=NA, main=NA)
+	mtext(side=1, 'Time (h)', font=2, line=2)
+	mtext(side=2, 'RMSE', font=2, line=2)
+	abline(v=dip$start.time, lty=2)
+	if(add.line)	abline(v=dip2$start.time, lty=3, col='red')
+	r1d	<-	coef(fit_p5(data.frame(dip$eval.times,dip$rmse))$m)
+	curve(p5(x,r1d[1],r1d[2],r1d[3],r1d[4],r1d[5],r1d[6]), from=0, to=120, col='blue', lwd=3, add=TRUE)
+
+	if(newDev)	mtext(tit, outer=TRUE, side=3, font=2, line=-1.5)
+	if(newDev & toFile)	dev.off()
+	invisible(dip)
+}
