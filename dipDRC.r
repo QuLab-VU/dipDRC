@@ -270,16 +270,14 @@ sumRep	<-	function(count,ids)
 }
 
 
-# Function to extract DIP rate across multiple condititons 
-# and calculate a 4-param logistic fit
-dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('conc','expt.date'), 
-	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, showEC50=TRUE, ...)
+# Function to extract DIP rate from single cell line and single drug + control 
+# and calculates a 4-param log-logistic fit by default
+dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'), 
+	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), ...)
 {	
 	if(plotIt & toFile)	pdf('dipDRC_graph.pdf')
 	concName	<-	var[grep('[Cc]onc',var)]
 	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
-	out	<-	list()
-
 	Uconc		<-	unique(dtf[,concName])
 	dip.rates	<-	dtf[,var]
 	rownames(dip.rates)	<-	NULL
@@ -289,43 +287,66 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('conc','expt.dat
 		for(co in unique(Uconc)) 
 		{
 			dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
-				findDIP(sumRep(	dtf[dtf[,concName]==co & dtf[,exptID]==r,yName],
+				tryCatch({findDIP(sumRep(	dtf[dtf[,concName]==co & dtf[,exptID]==r,yName],
 								dtf[dtf[,concName]==co & dtf[,exptID]==r,xName]), print.dip=print.dip)$dip
+					},
+					error=function(cond) {
+						message("Error in dipDRC:")
+						message(cond)
+						return(NA)
+					}				
+				)   
 		}
 	}
 	dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
 	if(norm)
 	{	
 		f <- formula(paste0('norm.dip ~ ',concName))
-		out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())},error=function(cond) {return(NA)})
+		out <- tryCatch({drm(f,data=dip.rates,fct=fct)},error=function(cond) {return(NA)})
 	} else
 	{
 		f <- formula(paste0('dip ~ ',concName))
-		out[[ucd]] <- tryCatch({drm(f,data=dip.rates,fct=LL.4())	},error=function(cond) {return(NA)})
+		out <- tryCatch({drm(f,data=dip.rates,fct=fct)	},error=function(cond) {return(NA)})
 	}
-	if(plotIt & !is.na(out[[ucd]][1]))
+	if(plotIt & !is.na(out[1]))
 	{
-		plot.dipDRC(out[[ucd]], ...)
+		plot.dipDRC(out, ...)
 		abline(h=0, col=grey(0.5), lty=2)
+	}
+	if(plotIt & is.na(out[1]))
+	{
+		plot(1, type='n',...)
+		text(0,0,'NA')
 	}
 
 	if(plotIt & toFile) dev.off()
 	invisible(out)
 }
 
-plot.dipDRC	<-	function(drm, cell.line="cell.line", drug="drug1", type='confidence', showEC50=TRUE, ...)
+
+
+plot.dipDRC	<-	function(drmo, plot.type='confidence', showEC50=TRUE, ...)
 {
-	if(is.na(drm[1])) 
+	if(is.na(drmo[1])) 
 	{
 		message('DRM object not available to plot')
 		return(NA)
 	}
-	stuff	<-	list(...)
+	param	<-	list(...)
 	
-	ifelse(main %in% names(stuff), tit <- stuff[['main']], tit <- paste(cell.line,drug,sep='_'))
-	dtp	<-	drm[[names(drm) == paste(cell.line,drug,sep='_')]]
-	plot(drm, main=tit, ...)
-	if(showEC50) abline(v=ED(out[[ucd]],50,interval='delta',display=FALSE)[1],col='red')
+	cell.line <- unique(drmo$origData$cell.line)[1]
+	drug <- unique(drmo$origData$drug1)[1]
+	
+	if(!('main' %in% names(param)))
+	{
+		tit <- paste(cell.line,drug,sep='_')
+		param[['main']] <- tit
+	}
+	if(!('type' %in% names(param)))		param[['type']] <- plot.type
+
+	myargs <- append(list(x=drmo),param)
+	do.call(plot,args=myargs)
+	if(showEC50) abline(v=ED(drmo,50,interval='delta',display=FALSE)[1],col='red')
 	abline(h=0, col=grey(0.5), lty=2)
 }
 
