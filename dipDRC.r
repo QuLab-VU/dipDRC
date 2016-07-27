@@ -270,43 +270,22 @@ sumRep	<-	function(count,ids)
 }
 
 
+dipDRC	<-	function(dat, xName='drug1.conc', yName='dip', name='Cell line + drug',
+	norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), ...)
+{	
 # Function to extract DIP rate from single cell line and single drug + control 
 # and calculates a 4-param log-logistic fit by default
-dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'), 
-	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), ...)
-{	
+# modified 2016-07-27 to use uid as indicator of experimental replicates 
 	if(plotIt & toFile)	pdf('dipDRC_graph.pdf')
-	concName	<-	var[grep('[Cc]onc',var)]
-	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
-	Uconc		<-	unique(dtf[,concName])
-	dip.rates	<-	dtf[,var]
-	rownames(dip.rates)	<-	NULL
-	dip.rates	<-	cbind(dip=NA,dip.rates)
-	for(r in unique(dtf[,exptID]))
-	{
-		for(co in unique(Uconc)) 
-		{
-			dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
-				tryCatch({findDIP(sumRep(	dtf[dtf[,concName]==co & dtf[,exptID]==r,yName],
-								dtf[dtf[,concName]==co & dtf[,exptID]==r,xName]), print.dip=print.dip)$dip
-					},
-					error=function(cond) {
-						message("Error in dipDRC:")
-						message(cond)
-						return(NA)
-					}				
-				)   
-		}
-	}
-	dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
+	dat$norm.dip	<-	dat[,yName]/mean(dat[dat[,xName]==0,yName])
 	if(norm)
 	{	
-		f <- formula(paste0('norm.dip ~ ',concName))
-		out <- tryCatch({drm(f,data=dip.rates,fct=fct)},error=function(cond) {return(NA)})
+		f <- formula(paste0('norm.dip ~ ',xName))
+		out <- tryCatch({drm(f,data=dat,fct=fct)},error=function(cond) {return(NA)})
 	} else
 	{
-		f <- formula(paste0('dip ~ ',concName))
-		out <- tryCatch({drm(f,data=dip.rates,fct=fct)	},error=function(cond) {return(NA)})
+		f <- formula(paste0('dip ~ ',xName))
+		out <- tryCatch({drm(f,data=dat,fct=fct)	},error=function(cond) {return(NA)})
 	}
 	if(plotIt & !is.na(out[1]))
 	{
