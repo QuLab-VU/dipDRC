@@ -315,8 +315,8 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 	}
 	if(plotIt & is.na(out[1]))
 	{
-		plot(1, type='n',...)
-		text(0,0,'NA')
+		plot(0:2,0:2,type='n')
+		text(1,1,'No DRC fit',pos=4)
 	}
 
 	if(plotIt & toFile) dev.off()
