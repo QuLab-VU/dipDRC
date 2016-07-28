@@ -294,8 +294,11 @@ dipDRC	<-	function(dat, xName='drug1.conc', yName='dip', name='Cell line + drug'
 	}
 	if(plotIt & is.na(out[1]))
 	{
-		plot(1, type='n',...)
-		text(0,0,'NA')
+		xval <- gsub(-Inf,min(log10(dat[,xName])[!is.infinite(log10(dat[,xName]))])-1,log10(dat[,xName]))
+		plot(xval,dat[,yName], ...)
+		xpos <- as.numeric(min(xval)) - 1
+		ypos <- min(na.omit(dat[,yName]))
+		text(xpos,ypos,'No DRC fit',pos=4)
 	}
 
 	if(plotIt & toFile) dev.off()
