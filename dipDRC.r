@@ -291,31 +291,34 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 								dtf[dtf[,concName]==co & dtf[,exptID]==r,xName]), print.dip=print.dip)$dip
 					},
 					error=function(cond) {
-						message("Error in dipDRC:")
+						message("Error in dipDRC/findDIP:")
 						message(cond)
 						return(NA)
 					}				
 				)   
 		}
 	}
-	dip.rates$norm.dip	<-	dip.rates$dip/dip.rates[dip.rates[,concName]==min(dip.rates[,concName]),'dip']
+	
+	dip.rates$norm.dip	<-	dip.rates$dip/mean(dip.rates[dip.rates[,concName]==0,'dip'])
 	if(norm)
 	{	
 		f <- formula(paste0('norm.dip ~ ',concName))
-		out <- tryCatch({drm(f,data=dip.rates,fct=fct)},error=function(cond) {return(NA)})
+		out <- tryCatch({drm(f,data=dip.rates,fct=fct)},error=function(cond) {return(dip.rates)})
 	} else
 	{
 		f <- formula(paste0('dip ~ ',concName))
-		out <- tryCatch({drm(f,data=dip.rates,fct=fct)	},error=function(cond) {return(NA)})
+		out <- tryCatch({drm(f,data=dip.rates,fct=fct)	},error=function(cond) {return(dip.rates)})
 	}
-	if(plotIt & !is.na(out[1]))
+	if(plotIt & class(out)=='drc')
 	{
 		plot.dipDRC(out, ...)
 		abline(h=0, col=grey(0.5), lty=2)
 	}
-	if(plotIt & is.na(out[1]))
+	if(plotIt & class(out)!='drc')
 	{
-		plot(0:2,0:2,type='n')
+		temp <- out
+		temp[temp$drug1.conc==0,'drug1.conc'] <- min(temp[temp$drug1.conc!=0,'drug1.conc'])/10
+		plot(dip ~ log10(drug1.conc), data=temp, ...)
 		text(1,1,'No DRC fit',pos=4)
 	}
 
