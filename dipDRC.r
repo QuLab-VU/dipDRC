@@ -270,11 +270,11 @@ sumRep	<-	function(count,ids)
 }
 
 
-# Function to extract DIP rate from single cell line and single drug + control 
-# and calculates a 4-param log-logistic fit by default
 dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'), 
 	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), ...)
 {	
+	# Function to extract DIP rate from single cell line and single drug + control 
+	# and calculates a 4-param log-logistic fit by default
 	if(plotIt & toFile)	pdf('dipDRC_graph.pdf')
 	concName	<-	var[grep('[Cc]onc',var)]
 	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
@@ -318,8 +318,13 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 	{
 		temp <- out
 		temp[temp$drug1.conc==0,'drug1.conc'] <- min(temp[temp$drug1.conc!=0,'drug1.conc'])/10
-		plot(dip ~ log10(drug1.conc), data=temp, ...)
-		text(1,1,'No DRC fit',pos=4)
+		myargs <- list(...)
+		myargs['type'] <- NULL
+		myargs <- c(list(formula("dip ~ log10(drug1.conc)"), data=temp),myargs)
+		do.call(plot,myargs)
+#		plot(dip ~ log10(drug1.conc), data=temp, ...)
+		abline(h=0, col=grey(0.5), lty=2)
+		legend("bottomleft",'No DRC fit',bty='n')
 	}
 
 	if(plotIt & toFile) dev.off()
