@@ -270,7 +270,7 @@ sumRep	<-	function(count,ids)
 }
 
 
-dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'), 
+dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'), 
 	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), ...)
 {	
 	# Function to extract DIP rate from single cell line and single drug + control 
@@ -278,14 +278,20 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 	if(plotIt & toFile)	pdf('dipDRC_graph.pdf')
 	concName	<-	var[grep('[Cc]onc',var)]
 	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
-	Uconc		<-	unique(dtf[,concName])
+	Uconc		<-	sort(unique(dtf[,concName]),decreasing=TRUE)
 	dip.rates	<-	dtf[,var]
+	dip.rates	<-	dip.rates[!duplicated(dip.rates$drug1.conc),]
 	rownames(dip.rates)	<-	NULL
 	dip.rates	<-	cbind(dip=NA,dip.rates)
 	for(r in unique(dtf[,exptID]))
 	{
 		for(co in unique(Uconc)) 
 		{
+
+# NOTE: currently trying to sum cell counts from replicate well from same experiment
+# this produces undesired effects when replicates are on different plates due to time difference
+# of image acquisition; results in jagged data output
+
 			dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
 				tryCatch({findDIP(sumRep(	dtf[dtf[,concName]==co & dtf[,exptID]==r,yName],
 								dtf[dtf[,concName]==co & dtf[,exptID]==r,xName]), print.dip=print.dip)$dip
@@ -322,7 +328,6 @@ dipDRC	<-	function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 		myargs['type'] <- NULL
 		myargs <- c(list(formula("dip ~ log10(drug1.conc)"), data=temp),myargs)
 		do.call(plot,myargs)
-#		plot(dip ~ log10(drug1.conc), data=temp, ...)
 		abline(h=0, col=grey(0.5), lty=2)
 		legend("bottomleft",'No DRC fit',bty='n')
 	}
