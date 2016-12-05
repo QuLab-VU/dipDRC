@@ -271,7 +271,7 @@ sumRep	<-	function(count,ids)
 
 
 dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'), 
-	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), ...)
+	print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), uidName='uid', ...)
 {	
 	# Function to extract DIP rate from single cell line and single drug + control 
 	# and calculates a 4-param log-logistic fit by default
@@ -279,30 +279,21 @@ dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 	concName	<-	var[grep('[Cc]onc',var)]
 	exptID		<-	var[grepl('[Dd]ate',var) | grepl('[Ii][Dd]',var)][1]
 	Uconc		<-	sort(unique(dtf[,concName]),decreasing=TRUE)
-	dip.rates	<-	dtf[,var]
-	dip.rates	<-	dip.rates[!duplicated(dip.rates$drug1.conc),]
+	dip.rates	<-	dtf[,c(var,uidName)]
+	dip.rates	<-	dip.rates[!duplicated(dip.rates[,uidName]),]
 	rownames(dip.rates)	<-	NULL
 	dip.rates	<-	cbind(dip=NA,dip.rates)
-	for(r in unique(dtf[,exptID]))
+	for(id in unique(dtf[,uidName]))
 	{
-		for(co in unique(Uconc)) 
-		{
-
-# NOTE: currently trying to sum cell counts from replicate well from same experiment
-# this produces undesired effects when replicates are on different plates due to time difference
-# of image acquisition; results in jagged data output
-
-			dip.rates[dip.rates[,concName]==co & dip.rates[,exptID]==r,'dip']	<-	
-				tryCatch({findDIP(sumRep(	dtf[dtf[,concName]==co & dtf[,exptID]==r,yName],
-								dtf[dtf[,concName]==co & dtf[,exptID]==r,xName]), print.dip=print.dip)$dip
-					},
-					error=function(cond) {
-						message("Error in dipDRC/findDIP:")
-						message(cond)
-						return(NA)
-					}				
-				)   
-		}
+		dip.rates[dip.rates[,uidName]==id,'dip']	<-	
+			tryCatch({findDIP(	dtf[dtf[,uidName]==id,c(xName,yName)], print.dip=print.dip)$dip
+				},
+				error=function(cond) {
+					message(paste("Error in dipDRC/findDIP:",uidName,'=',id))
+					message(cond)
+					return(NA)
+				}				
+			)   
 	}
 	
 	dip.rates$norm.dip	<-	dip.rates$dip/mean(dip.rates[dip.rates[,concName]==0,'dip'])
