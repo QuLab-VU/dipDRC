@@ -354,3 +354,24 @@ plot.dipDRC	<-	function(drmo, plot.type='confidence', showEC50=TRUE, ...)
 	abline(h=0, col=grey(0.5), lty=2)
 }
 
+myll4	<-	function(x,b,c,d,e)
+{
+#                           d - c           
+# f(x)  =  c  +  ---------------------------
+#                1 + exp(b(log(x) - log(e)))
+#	b: Hill coefficient
+#	c: lower limit (Emax)
+#	d: upper limit (Emin)
+#	e: EC50 (not log scaled)
+	c + ( (d - c) / (1 + exp(b*(log(x) - log(e)))))
+}
+f(x) = c + (d-c) / (1 + exp(b(\log(x)-\log(e)))}
+
+addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, ...)
+{
+	param <- coef(drmodel)
+	names(param) <- letters[2:5]
+
+	curve(do.call(myll4,args=append(list(x),as.list(param))), from=fromval, to=toval,add=TRUE,...)
+}
+
