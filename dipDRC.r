@@ -365,7 +365,6 @@ myll4	<-	function(x,b,c,d,e)
 #	e: EC50 (not log scaled)
 	c + ( (d - c) / (1 + exp(b*(log(x) - log(e)))))
 }
-f(x) = c + (d-c) / (1 + exp(b(\log(x)-\log(e)))}
 
 addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, ...)
 {
