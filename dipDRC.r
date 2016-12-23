@@ -374,3 +374,26 @@ addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, ...)
 	curve(do.call(myll4,args=append(list(x),as.list(param))), from=fromval, to=toval,add=TRUE,...)
 }
 
+getParam <- function(drmod)
+{
+	if(class(drmod) != 'drc') {message('getParam() requires drm object'); return(invisible(NA))}
+	# estimates and confidence intervals of log-logistic model fit parameters
+	ci <- as.data.frame(confint(drmod))
+	ci <- cbind(est=coef(drmod),ci)
+	rownames(ci) <- c('slope','Emax','E0','EC50')
+	colnames(ci) <- c('est','lower','upper')
+	
+	# e_halfmax = DIP rate at EC50
+	e_halfmax <- predict(drmod, data.frame(drug1.conc=ci['EC50','est']), interval='confidence')
+	names(e_halfmax) <- c('est','lower','upper')
+	ic10 <- ED(drmod, ci['E0','est']*0.9, type='absolute', interval='delta', display=FALSE)
+	rownames(ic10) <- 'IC10'
+	ic50 <- ED(drmod, ci['E0','est']/2, type='absolute', interval='delta', display=FALSE)
+	rownames(ic50) <- 'IC50'
+	ic100 <- ED(drmod, 0, type='absolute', interval='delta', display=FALSE)
+	rownames(ic100) <- 'IC100'
+	out <- rbind(ci,e_halfmax,ic10[c(1,3,4)],ic50[c(1,3,4)],ic100[c(1,3,4)])
+	rownames(out) <- c(rownames(out)[1:4],'E50','IC10','IC50','IC100')
+	out
+}
+
