@@ -366,11 +366,15 @@ myll4	<-	function(x,b,c,d,e)
 	c + ( (d - c) / (1 + exp(b*(log(x) - log(e)))))
 }
 
-addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, ...)
+addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, norm=FALSE, ...)
 {
 	param <- coef(drmodel)
 	names(param) <- letters[2:5]
-
+	if(norm)
+	{
+		param[2] <- param[2]/param[3]
+		param[3] <- 1
+	}
 	curve(do.call(myll4,args=append(list(x),as.list(param))), from=fromval, to=toval,add=TRUE,...)
 }
 
