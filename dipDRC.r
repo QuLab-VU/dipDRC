@@ -374,8 +374,45 @@ addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, norm=FALSE, ...)
 	{
 		param[2] <- param[2]/param[3]
 		param[3] <- 1
+		if(param[2] > param[3])
+		{
+			temp <- param[2]
+			param[2] <- param[3]
+			param[3] <- temp
+		}
 	}
 	curve(do.call(myll4,args=append(list(x),as.list(param))), from=fromval, to=toval,add=TRUE,...)
+}
+
+
+getAA	<-	function(drmod, drugconcrange=c(1e-12,1e-5), minval=-0.5, removeNE=FALSE)
+{
+	require(drc)
+	# drmod is dose–response model (drm) from the drc library
+	# response values of less than minval will be replaced with minval
+	# removeNE is logical indicating whether to remove AA values < 0 (no effect)
+	
+	# normalize response values to 0 as maximum level by subtracting E0 from all values
+	# total area determined by dividing by the number of measurements
+	# This approach is equivalent to that used by Barretina et al.
+	# See doi:10.1038/nature11735
+	param			<-	coef(drmod)
+	names(param)	<-	letters[2:5]
+	# b = slope parameter (Hill coefficient); c = Emax; d = E0; e = EC50
+	# E0 == effect in absence of drug
+	# normalize by dividing Emax by E0 and setting E0 to 1
+	param[['c']] <- param[['c']]/param[['d']]
+	param[['d']] <- 1
+	xvals <- 10^seq(log10(drugconcrange[1]),log10(drugconcrange[2]),.1)
+	yvals	<-	do.call(myll4, args=append(list(x=xvals),as.list(param)))-1
+	
+	# to eliminate activity area measurements less than zero (no effect/enhancing proliferation)
+	# is slope is less than zero, increasing drug increases proliferation rate --> set output val to 0
+	if(removeNE)
+	{	
+		sapply(seq(length(param)), 
+			function(x) ifelse(param[['b']][x]<0,0,(-sum(yvals) / length(yvals))[x]))
+	} else { -sum(yvals) / length(yvals) }
 }
 
 getParam <- function(drmod)
@@ -404,9 +441,62 @@ getParam <- function(drmod)
 	rownames(ic50) <- 'IC50'
 	ic100 <- ED(drmod, 0, type='absolute', interval='delta', display=FALSE)
 	rownames(ic100) <- 'IC100'
-
-	out <- rbind(ci,rrEmax,e_halfmax,rr_e_halfmax,ic10[c(1,3,4)],ic50[c(1,3,4)],ic100[c(1,3,4)])
-	rownames(out) <- c(rownames(out)[1:4],'rrEmax','E50','rrE50','IC10','IC50','IC100')
+	# lowest observed value (Emax(observed) in the highest two concentrations of drug)
+	dat <- drmod$origData
+	# lowest observed value (Emax(observed) in the highest two concentrations of drug)
+	emaxobs <- min(dat[dat$drug1.conc >= max(dat$drug1.conc)/11,'dip'])
+	# lowest relative observed value (Emax(observed) in the highest two concentrations of drug)
+	rremaxobs <- min(dat[dat$drug1.conc >= max(dat$drug1.conc)/11,'norm.dip'])
+	
+	out <- rbind(ci,rrEmax,e_halfmax,rr_e_halfmax,ic10[c(1,3,4)],ic50[c(1,3,4)],ic100[c(1,3,4)],
+		emaxobs,rremaxobs)
+	rownames(out) <- c(rownames(out)[1:4],'rrEmax','E50','rrE50','IC10','IC50','IC100','Emaxobs','rrEmaxobs')
 	out
 }
 
+plotMultiCurve <- function(drm_list, norm=FALSE, leg.scale=0.75, ...)
+{
+	if(class(drm_list) != 'list' | !all(lapply(drm_list,class) == 'drc'))
+	{
+		message('plotMultiCurve needs list of drm objects')
+		return(invisible(NA))
+	}
+
+	drm_cl <- unlist(lapply(drm_list, function(x) unique(x$origData$cell.line)))
+	drm_dr <- unlist(lapply(drm_list, function(x) unique(x$origData$drug1)[unique(x$origData$drug1) != 'control']))
+	tit <- ifelse(all(drm_dr==drm_dr[1]),drm_dr[1],'')
+	drm_names <- paste(drm_cl,drm_dr)
+	if(all(drm_dr==drm_dr[1]))	drm_names <- drm_cl
+	
+	par(mar=c(4,4,2,.5))
+	n <- length(drm_list)
+	mycolors <- c('red','orange','yellow','green','blue','purple','brown','black')
+	if(n <= 8) { rep.col <-	mycolors[seq(n)] } else {
+		rep.col	<-	mycolors[c(1:8,(seq(n)[8:n]%%8)+1)] }
+	rep.lty <- rep(seq(ceiling(n/8)),each=8)[1:n]
+	if(norm)
+	{	plot(drm_list[[1]], xlim=c(0,1e-5), ylim=c(-0.25,1.25), log='x', type='none', 
+		xlab='[drug], M',ylab='Response ratio', main=tit, lwd=0, col='white')
+	} else {
+		plot(drm_list[[1]], xlim=c(0,1e-5),  ylim=c(-0.025,0.07), log='x', type='none', 
+		xlab='[drug], M',ylab='DIP rate', main=tit, lwd=0, col='white')
+	}
+	lapply(seq(length(drm_list)), function(x) { 
+		addLL4curve(drm_list[[x]],
+			col=rep.col[x], lty=rep.lty[x], norm=norm, ...); invisible(return()) })
+	legend('bottomleft',legend=drm_names,col=rep.col,lty=rep.lty,lwd=leg.scale, cex=leg.scale)
+}
+
+effectAtMeanIC50 <- function(drmlist=drc,drugname='erlotinib',sig=3)
+{
+	# find mean IC50 across all cell lines for a particular drug
+	# then calculate the relative effect induced by that concentration in each cell line
+	drms <- drmByDrug(drmlist,drug_name=drugname)
+	ic50s <- sapply(drms, function(x) ED(x, coef(x)['d:(Intercept)']/2, type='absolute', interval='delta', display=FALSE)[1])
+	conc <- signif(10^mean(log10(ic50s),na.rm=TRUE),3)
+	effect <- sapply(drms, function(x) signif(PR(x,conc)/PR(x,0),sig))
+	cl <- sapply(names(drms), function(x) strsplit(x,'.',fixed=TRUE)[[1]][1])
+	out <- data.frame(cell.line=cl,drug1=drugname,mean.IC50=conc,rEffect.at.meanIC50=effect)
+	rownames(out) <- NULL
+	out
+}
