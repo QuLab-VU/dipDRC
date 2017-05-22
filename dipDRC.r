@@ -500,3 +500,17 @@ effectAtMeanIC50 <- function(drmlist=drc,drugname='erlotinib',sig=3)
 	rownames(out) <- NULL
 	out
 }
+
+effectAtMedianEC50 <- function(drmlist=drc,drugname='erlotinib',sig=3)
+{
+	# find mean IC50 across all cell lines for a particular drug
+	# then calculate the relative effect induced by that concentration in each cell line
+	drms <- drmByDrug(drmlist,drug_name=drugname)
+	med.ec50 <- signif(median(unlist(sapply(drms, function(x) coef(x)['e:(Intercept)'], simplify=FALSE))),sig)
+	effect <- sapply(drms, function(x) signif(PR(x,med.ec50)/PR(x,0),sig))
+	cl <- sapply(names(drms), function(x) gsub(paste0('.',drugname),'',x))
+	out <- data.frame(cell.line=cl,drug1=drugname,median.EC50=med.ec50,rEffect.at.medianEC50=effect)
+	out <- out[order(out$cell.line),]
+	rownames(out) <- NULL
+	out
+}
