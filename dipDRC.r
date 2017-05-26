@@ -464,7 +464,7 @@ plotMultiCurve <- function(drm_list, norm=FALSE, leg.scale=0.75, ...)
 	pargs <- as.list(substitute(list(...)))[-1L]
 	drm_cl <- unlist(lapply(drm_list, function(x) unique(x$origData$cell.line)))
 	drm_dr <- unlist(lapply(drm_list, function(x) unique(x$origData$drug1)[unique(x$origData$drug1) != 'control']))
-	if('main' %in% names(pargs))
+	if(!'main' %in% names(pargs))
 	{
 		pargs['main'] <- ifelse(all(drm_dr==drm_dr[1]),drm_dr[1],'')
 	}
