@@ -418,6 +418,10 @@ getAA	<-	function(drmod, drugconcrange=c(1e-12,1e-5), minval=-0.5, removeNE=FALS
 getParam <- function(drmod)
 {
 	if(class(drmod) != 'drc') {message('getParam() requires drm object'); return(invisible(NA))}
+	# obtain model formula to determine name of dependent variable	
+	yname <- drmod$dataList$names$orName
+	xname <- drmod$dataList$names$dName
+	
 	# estimates and confidence intervals of log-logistic model fit parameters
 	ci <- as.data.frame(confint(drmod))
 	ci <- cbind(est=coef(drmod),ci)
@@ -444,9 +448,9 @@ getParam <- function(drmod)
 	# lowest observed value (Emax(observed) in the highest two concentrations of drug)
 	dat <- drmod$origData
 	# lowest observed value (Emax(observed) in the highest two concentrations of drug)
-	emaxobs <- min(dat[dat$drug1.conc >= max(dat$drug1.conc)/11,'dip'])
+	emaxobs <- min(dat[dat[,xname] >= max(dat[,xname])/11,yname])
 	# lowest relative observed value (Emax(observed) in the highest two concentrations of drug)
-	rremaxobs <- min(dat[dat$drug1.conc >= max(dat$drug1.conc)/11,'norm.dip'])
+	rremaxobs <- ifelse(yname=='dip', min(dat[dat[,xname] >= max(dat[,xname])/11,'norm.dip']),NA)
 	
 	out <- rbind(ci,rrEmax,e_halfmax,rr_e_halfmax,ic10[c(1,3,4)],ic50[c(1,3,4)],ic100[c(1,3,4)],
 		emaxobs,rremaxobs)
