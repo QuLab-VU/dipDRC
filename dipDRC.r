@@ -385,9 +385,8 @@ addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, norm=FALSE, ...)
 }
 
 
-getAA	<-	function(drmod, drugconcrange=c(1e-12,1e-5), minval=-0.5, removeNE=FALSE)
+getAA	<-	function(drmod, drugconcrange=c(1e-12,1e-5), minval=-.5, norm=TRUE, removeNE=FALSE)
 {
-	require(drc)
 	# drmod is dose–response model (drm) from the drc library
 	# response values of less than minval will be replaced with minval
 	# removeNE is logical indicating whether to remove AA values < 0 (no effect)
@@ -400,12 +399,15 @@ getAA	<-	function(drmod, drugconcrange=c(1e-12,1e-5), minval=-0.5, removeNE=FALS
 	names(param)	<-	letters[2:5]
 	# b = slope parameter (Hill coefficient); c = Emax; d = E0; e = EC50
 	# E0 == effect in absence of drug
+	if(norm)
 	# normalize by dividing Emax by E0 and setting E0 to 1
-	param[['c']] <- param[['c']]/param[['d']]
-	param[['d']] <- 1
+	{
+		param[['c']] <- param[['c']]/param[['d']]
+		param[['d']] <- 1
+	}
 	xvals <- 10^seq(log10(drugconcrange[1]),log10(drugconcrange[2]),.1)
 	yvals	<-	do.call(myll4, args=append(list(x=xvals),as.list(param)))-1
-	
+	yvals <- sapply(yvals, function(x) ifelse(x < minval , minval, x))
 	# to eliminate activity area measurements less than zero (no effect/enhancing proliferation)
 	# is slope is less than zero, increasing drug increases proliferation rate --> set output val to 0
 	if(removeNE)
