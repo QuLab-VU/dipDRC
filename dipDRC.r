@@ -417,6 +417,21 @@ getAA	<-	function(drmod, drugconcrange=c(1e-12,1e-5), minval=-.5, norm=TRUE, rem
 	} else { -sum(yvals) / length(yvals) }
 }
 
+getAAr	<-	function(drmod)
+{
+	# drmod is dose–response model (drm) from the drc library
+	# formula derived by Leonard Harris; https://www.overleaf.com/9362253wtqkzmhwndsz#/33823251/
+	# if value is less than 0, set to 0
+	p				<-	coef(drmod)
+	names(p)		<-	c('h','Emax','E0','EC50')
+	maxconc 		<-	max(drmod$origData$drug1.conc)
+	out <- 1/p['h'] * (p['E0']-p['Emax'])/p['E0'] * 
+		log10( (p['EC50']^p['h'] + maxconc^p['h']) / p['EC50']^p['h'] )
+	names(out) <- 'AAr'
+	out[out < 0] <- 0
+	out
+}
+
 getParam <- function(drmod)
 {
 	if(class(drmod) != 'drc') {message('getParam() requires drm object'); return(invisible(NA))}
@@ -447,7 +462,8 @@ getParam <- function(drmod)
 	rownames(ic50) <- 'IC50'
 	ic100 <- ED(drmod, 0, type='absolute', interval='delta', display=FALSE)
 	rownames(ic100) <- 'IC100'
-	# lowest observed value (Emax(observed) in the highest two concentrations of drug)
+	aa <- getAAr(drmod)
+	
 	dat <- drmod$origData
 	# lowest observed value (Emax(observed) in the highest two concentrations of drug)
 	emaxobs <- min(dat[dat[,xname] >= max(dat[,xname])/11,yname])
@@ -455,8 +471,8 @@ getParam <- function(drmod)
 	rremaxobs <- ifelse(yname=='dip', min(dat[dat[,xname] >= max(dat[,xname])/11,'norm.dip']),NA)
 	
 	out <- rbind(ci,rrEmax,e_halfmax,rr_e_halfmax,ic10[c(1,3,4)],ic50[c(1,3,4)],ic100[c(1,3,4)],
-		emaxobs,rremaxobs)
-	rownames(out) <- c(rownames(out)[1:4],'rrEmax','E50','rrE50','IC10','IC50','IC100','Emaxobs','rrEmaxobs')
+		emaxobs,rremaxobs,aa)
+	rownames(out) <- c(rownames(out)[1:4],'rrEmax','E50','rrE50','IC10','IC50','IC100','Emaxobs','rrEmaxobs','AAr')
 	out
 }
 
