@@ -424,10 +424,11 @@ getAA <- function(p, drugconcrange=c(1e-12,1e-5), minval=-1, norm=TRUE, removeNE
     } else { -sum(yvals) / length(yvals) }
 }
 
-getAAr <- function(p,maxconc=1e-5)
+getAAr <- function(p,minmax=c(1e-12,1e-5),RespRatio=TRUE)
 {
     # p is either a dose–response model (drm) from the drc library or its coefficients
     # formula derived by Leonard Harris; https://www.overleaf.com/9362253wtqkzmhwndsz#/33823251/
+    # RespRatio = logical determining whether to scale values so minimum effect = 1 (response ratio)
     # if value is less than 0, set to 0
     if(class(p)=='drc') p <- coef(p)
     if(!(class(p)=='numeric' & length(p)==4)) 
@@ -436,8 +437,12 @@ getAAr <- function(p,maxconc=1e-5)
         return(NA)
     }
     names(p)     <- c('h','Emax','E0','EC50')
-    out <- 1/p['h'] * (p['E0']-p['Emax'])/p['E0'] * 
-        log10( (p['EC50']^p['h'] + maxconc^p['h']) / p['EC50']^p['h'] )
+    out <- 1/p['h'] *  log10(  
+                (p['EC50']^p['h'] + minmax[2]^p['h']) / 
+                (p['EC50']^p['h'] + minmax[1]^p['h'])
+            )
+    #
+    if(RespRatio) out <- out * (p['E0']-p['Emax'])/p['E0']
     names(out) <- 'AAr'
     out[out < 0] <- 0
     out
