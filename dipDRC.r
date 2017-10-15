@@ -1,15 +1,4 @@
-getPackageIfNeeded <- function(pkg) {
-  if (!require(pkg, character.only=TRUE))
-    install.packages(pkgs=pkg, dependencies=TRUE)
-}
 
-pkgs <- c("drc", "car")
-
-sapply(pkgs,getPackageIfNeeded)
-
-
-require(drc)            # for dose-response curves; version 2.5-12
-require(car)            # for linear detailed regression analysis
 
 # fifth order polynomial
 p5 <- function(x,int,b1,b2,b3,b4,b5) int+b1*x+b2*x^2+b3*x^3+b4*x^4+b5*x^5
@@ -40,58 +29,14 @@ fit_p5 <- function(dtf)
     list(m=m.p5, coef.1stderiv=m.p5.coef.1stderiv, coef.2ndderiv=m.p5.coef.2ndderiv)
 }
 
-log2norm <- function(count, ids, norm_type=c('idx','ref')[1], 
-    norm_id="0", norm_vals, norm_idx=1, zero=log2(0.999))
-{
-# this function will normalize in one of two distinct ways:
-# 1) using the position of each vector specified by 'idx'
-# 2) using the position identified from matching 'norm_id'
-# to its position of the vector from 'norm_val'
-# e.g. norm_id = 3 could refer to a vector 'day' containing a time variable
-# made this modification on 2014-09-23, but should still work with older code
-    
-    # l2
-    l2 <- log2(count)
-        # finds time points with no cells (0), and replace it
-        # with zero (log2(0.999)), so that the data can be displayed 
-        # in log scale, yet easily found.
-    l2[is.infinite(l2)] <- zero
-    norm <- numeric()
-    group <- as.character(unique(ids))
-
-    if(norm_type=='idx')
-    {
-        for(i in group)
-        {
-            d <- l2[ids == i]
-            norm <- append(norm, d - d[norm_idx])
-        }
-    
-        norm
-        
-    }    else    {
-    
-        for(i in group)
-        {
-            norm_pos     <- match(norm_id, as.character(norm_vals)[ids == i])
-            d <- l2[ids == i]
-            norm <- append(norm, d - d[norm_pos])
-        }
-        norm
-    }
-
-}
-
-# root-mean-square deviation (RMSD) of an estimator == root-mean-square error (RMSE) 
-# when the estimator is unbiased, RMSD is the square root of variance == standard error
-# RMSD represents the sample standard deviation of the differences between predicted values and observed values.
-# resid == vector or matrix of residuals (difference between the observed and predicted values)
 rmsd <- function(resid)
 {
+	# root-mean-square deviation (RMSD) of an estimator == root-mean-square error (RMSE) 
+	# when the estimator is unbiased, RMSD is the square root of variance == standard error
+	# RMSD represents the sample standard deviation of the differences between predicted values and observed values.
+	# resid == vector or matrix of residuals (difference between the observed and predicted values)
     sqrt(sum((resid)^2)/length(resid))
 }
-
-
 
 makeUCond <- function(dat,var)
 {
@@ -108,63 +53,6 @@ makeUCond <- function(dat,var)
     apply(dat[,var],1, function(x) paste(x, collapse='_'))
 }
 
-
-
-plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
-{
-    stuff <- list(...)
-    if('o' %in% names(stuff) & tit=='rmse')    tit <- paste(tit,'with o =',stuff[['o']])
-    dip <- findDIP(dtp,...)
-    add.line <- FALSE
-    if(add.line.met != 'none')    
-    {    
-        add.line <- TRUE
-        dip2 <- findDIP(dtp,met=add.line.met)
-    }
-
-    fn <- paste(tit,nrow(dtp),'points.pdf')
-    if('metric' %in% names(stuff))    tit <- paste(tit,stuff[['metric']])
-    
-    if(newDev & !toFile)    dev.new(width=7.5, height=3)
-    if(newDev &toFile)    pdf(file=fn, width=7.5, height=3)
-    if(newDev) par(mfrow=c(1,3), oma=c(0,0,1,0))
-
-    plot(dtp, main=NA, xlab=NA, ylab=NA)
-    mtext(side=1, 'Time (h)', font=2, line=2)
-    mtext(side=2, 'log2(cell number)', font=2, line=2)
-    dip.val <- round(dip$dip,4)
-    dip.95conf <- round(abs(dip.val-confint(dip$best.model)[2,1]),5)
-    legend("bottomright", c(paste('DIP =',dip.val),paste0('  ±',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
-    curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=0,to=150,add=TRUE, col='red', lwd=3)
-    
-    try(polygon(    x=c(dip$start.time, 150, 150),
-        y=c(coef(dip$best.model)[1]+coef(dip$best.model)[2]*dip$start.time,
-        coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*150,
-        coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*150), col=adjustcolor("gray",alpha.f=0.4), density=NA))
-    
-    abline(v=dip$start.time, lty=2)
-    if(add.line)    abline(v=dip2$start.time, lty=3, col='red')
-
-    # plotting graph of adjusted R2
-    plot(dip$eval.times,dip$ar2, ylim=c(0,1), xlab=NA, ylab=NA, main=NA)
-    mtext(side=1, 'Time (h)', font=2, line=2)
-    mtext(side=2, 'adj R2', font=2, line=2)
-    abline(v=dip$start.time, lty=2)
-    if(add.line)    abline(v=dip2$start.time, lty=3, col='red')
-    
-    # plotting graph of RMSE
-    plot(dip$eval.times,dip$rmse, ylim=c(0,0.5), xlab=NA, ylab=NA, main=NA)
-    mtext(side=1, 'Time (h)', font=2, line=2)
-    mtext(side=2, 'RMSE', font=2, line=2)
-    abline(v=dip$start.time, lty=2)
-    if(add.line)    abline(v=dip2$start.time, lty=3, col='red')
-    r1d <- coef(fit_p5(data.frame(dip$eval.times,dip$rmse))$m)
-    curve(p5(x,r1d[1],r1d[2],r1d[3],r1d[4],r1d[5],r1d[6]), from=0, to=120, col='blue', lwd=3, add=TRUE)
-
-    if(newDev)    mtext(tit, outer=TRUE, side=3, font=2, line=-1.5)
-    if(newDev & toFile)    dev.off()
-    invisible(dip)
-}
 
 findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','rmse')[1], o=0, dat.type='cell.counts', print.dip=FALSE)
 {
@@ -304,7 +192,7 @@ dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
     } else
     {
         f <- formula(paste0('dip ~ ',concName))
-        out <- tryCatch({drm(f,data=dip.rates,fct=fct)    },error=function(cond) {return(dip.rates)})
+        out <- tryCatch({drc::drm(f,data=dip.rates,fct=fct)    },error=function(cond) {return(dip.rates)})
     }
     if(plotIt & class(out)=='drc')
     {
@@ -356,13 +244,13 @@ plot.dipDRC <- function(drmo, plot.type='confidence', showEC50=TRUE, ...)
 
 myll4 <- function(x,b,c,d,e)
 {
-#                           d - c           
-# f(x)  =  c  +  ---------------------------
-#                1 + exp(b(log(x) - log(e)))
-#    b: Hill coefficient
-#    c: lower limit (Emax)
-#    d: upper limit (Emin)
-#    e: EC50 (not log scaled)
+	#                           d - c           
+	# f(x)  =  c  +  ---------------------------
+	#                1 + exp(b(log(x) - log(e)))
+	#    b: Hill coefficient
+	#    c: lower limit (Emax)
+	#    d: upper limit (Emin)
+	#    e: EC50 (not log scaled)
     c + ( (d - c) / (1 + exp(b*(log(x) - log(e)))))
 }
 
