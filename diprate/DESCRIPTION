@@ -1,9 +1,16 @@
 Package: diprate
 Type: Package
-Title: What the package does (short line)
+Title: Analysis of dose-effect data based on drug-induced cell proliferation (DIP) rates
 Version: 1.0
-Date: 2017-10-15
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Date: 2017-10-14
+Author: Darren R. Tyson
+Maintainer: Darren R. Tyson <d.tyson@vanderbilt.edu>
+Description: Studies of the effects of drugs or other perturbations on cell proliferation 
+	(especially cancer cells grown in culture) have generally been performed using percent 
+	of viable cells after 72 hours of treatment. We have described the steady-state rate 
+	of proliferation achieved after any drug equilibration as the drug-induced 
+	proliferation (DIP) rate. In this package we provide functions to process raw data, 
+	estimate the DIP rate, and analyze the concentration-dependent effects using the 
+	dependent drc package. 
+License: GPL-3
+Imports: drc (>= 3.0)
