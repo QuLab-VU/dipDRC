@@ -2,10 +2,10 @@
 % Please edit documentation in R/utMA.r
 \name{countToMA}
 \alias{countToMA}
-\title{Function to obtain time averaged cell counts}
+\title{Function to obtain time-averaged cell counts}
 \usage{
 countToMA(dat, col2avg = "cell.count", tau = 12, dig = 3)
 }
 \description{
-Function to obtain time averaged cell counts
+Function to obtain time-averaged cell counts
 }

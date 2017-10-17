@@ -1,4 +1,4 @@
-exportPattern("^[[:alpha:]]+")
+exportPattern("^[^[[:punct:]]]*[^\ ]*")
 import("drc")
 importFrom("grDevices", "adjustcolor", "dev.new", "dev.off", "grey",
          "pdf")

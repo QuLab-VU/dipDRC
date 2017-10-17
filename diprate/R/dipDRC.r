@@ -1,9 +1,9 @@
 
 
 # fifth order polynomial
-p5_ <- function(x,int,b1,b2,b3,b4,b5) int+b1*x+b2*x^2+b3*x^3+b4*x^4+b5*x^5
+.p5 <- function(x,int,b1,b2,b3,b4,b5) int+b1*x+b2*x^2+b3*x^3+b4*x^4+b5*x^5
 
-deriv_poly_coef_ <- function(co) {
+.deriv_poly_coef <- function(co) {
     stopifnot(
         all(sapply(names(co), FUN=function(x) x %in% c('int','b1','b2','b3','b4','b5')))
     )
@@ -15,16 +15,16 @@ deriv_poly_coef_ <- function(co) {
 
 # obtaining best fit parameters of a 5th order polynomial
 # linear model to 5th order polynomial using p5 function defined above
-fit_p5_ <- function(dtf)
+.fit_p5 <- function(dtf)
 {
     x     <- colnames(dtf)[1]
     y     <- colnames(dtf)[2]
     
-    form <- formula(paste(y, '~ p5_(', x, ', int, b1, b2, b3, b4, b5)'))
+    form <- formula(paste(y, '~ .p5(', x, ', int, b1, b2, b3, b4, b5)'))
     
     m.p5 <- nls(form, data=dtf, start=list(int=1,b1=1,b2=1,b3=1,b4=1,b5=1))
-    m.p5.coef.1stderiv <- deriv_poly_coef_(coef(m.p5))
-    m.p5.coef.2ndderiv <- deriv_poly_coef_(m.p5.coef.1stderiv)
+    m.p5.coef.1stderiv <- .deriv_poly_coef(coef(m.p5))
+    m.p5.coef.2ndderiv <- .deriv_poly_coef(m.p5.coef.1stderiv)
     
     list(m=m.p5, coef.1stderiv=m.p5.coef.1stderiv, coef.2ndderiv=m.p5.coef.2ndderiv)
 }
@@ -40,7 +40,7 @@ rmsd <- function(resid)
     sqrt(sum((resid)^2)/length(resid))
 }
 
-makeUCond <- function(dat,var)
+.makeUCond <- function(dat,var)
 {
     #' Make unique condition
     #'
@@ -60,8 +60,22 @@ makeUCond <- function(dat,var)
 }
 
 
-findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','rmse')[1], o=0, dat.type='cell.counts', print.dip=FALSE)
+findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','rmse')[1], 
+    o=0, dat.type='cell.counts', print.dip=FALSE)
 {
+    #' Function to determine DIP rate from cell counts over time
+    #' 
+    #' \code{findDIP} uses one of three different metrics to determine the time after which the
+    #'  rate of proliferation becomes stable (linear in log scale) and provides an estimate
+    #'  of that rate.
+    #' @param dtf data.frame of data to fit
+    #' @param name name associated with data to fit
+    #' @param all.models logical as to whether to return all fit models
+    #' @param metric character of \emph{opt}, \emph{ar2}, or \emph{rmse}
+    #' @param o numeric value of offset used in polynomial fit for parameter estimation
+    #' @param dat.type character of type of data. Default is \emph{cell.counts}
+    #' @param print.dip logical as to whether to print DIP rate estimate to stdout
+    #' 
     if(nrow(dtf)<4 | ncol(dtf)<2)
     {
         message('findDIP requires data frame with nrows >= 4 and ncol >= 2')
@@ -100,13 +114,13 @@ findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','r
 
     # fit a 5th order polynomial to the values of rmse for linear models starting at each time point
     # simply used as an way to describe how the values of rmse change as starting time points are dropped 
-    rmse.p5     <- tryCatch({fit_p5_(data.frame(x=eval.times,rmse=rmse))},error=function(cond){NA})
+    rmse.p5     <- tryCatch({.fit_p5(data.frame(x=eval.times,rmse=rmse))},error=function(cond){NA})
     rmse.p5.coef <- tryCatch({coef(rmse.p5$m)},error=function(cond){NA})
     # first derivative of the best-fit 5th order polynomial is used to estimate when
     # the change of rmse over time (i.e. the first derivative value at a given time point) approaches zero
     rmse.p5.1std.coef <- tryCatch({rmse.p5$coef.1stderiv},error=function(cond){NA})
     
-    f <- function(...,offset) p5(...) + offset    
+    f <- function(...,offset) .p5(...) + offset    
 
 
     # opt is a combined metric for choosing the best linear model using
@@ -146,7 +160,7 @@ findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','r
 
     dip <- coef(m[[idx]])[2]
     ci <- diff(confint(m[[idx]])[2,])/2
-    names(ci) <- '\xf1'     # plus-minus symbol (ascii)
+    names(ci) <- intToUtf8(177)     # plus-minus symbol (ascii)
     if(print.dip) print(paste('DIP =',round(dip,4),'starting at',round(x[idx],2),'with',n+2,'data points'))
     out=list(data=data.frame(Time_h=x,l2=y), model=m, metric.used=metric, n=n, idx=idx, best.model=m[[idx]], opt=opt, 
         eval.times=x[seq(n)], rmse=rmse,ar2=ar2,p=p,start.time=x[idx],dip=dip, dip.95ci=ci, rmse.p5.1std.coef=rmse.p5.1std.coef)
@@ -157,7 +171,7 @@ findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','r
     invisible(out)
 }
 
-sumRep <- function(count,ids)
+.sumRep <- function(count,ids)
 {
     uid     <- unique(ids)
     sums <- sapply(unique(ids), FUN=function(x) sum(count[ids==x]))
@@ -231,6 +245,9 @@ dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
 
 plot.dipDRC <- function(drmo, plot.type='confidence', showEC50=TRUE, ...)
 {
+    #' Plot DIP drc (dose-response curve)
+    #' 
+    #' 
     if(is.na(drmo[1])) 
     {
         message('DRM object not available to plot')
@@ -287,6 +304,9 @@ addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, norm=FALSE, ...)
 
 getAA <- function(p, drugconcrange=c(1e-12,1e-5), minval=-1, norm=TRUE, removeNE=FALSE)
 {
+    #' Calculate activity area of dose-response model (drm object)
+    #' 
+    #' 
     # p is dose-response model (drm) from the drc library
     # response values of less than minval will be replaced with minval
     # removeNE is logical indicating whether to remove AA values < 0 (no inhbitory effect)
@@ -326,6 +346,9 @@ getAA <- function(p, drugconcrange=c(1e-12,1e-5), minval=-1, norm=TRUE, removeNE
 
 getAAr <- function(p,minmax=c(1e-12,1e-5),RespRatio=TRUE)
 {
+    #' Calculate activity area of dose-response model (drm object) with response ratio as effect
+    #' 
+    #' 
     # p is either a dose-response model (drm) from the drc library or its coefficients
     # formula derived by Leonard Harris; https://www.overleaf.com/9362253wtqkzmhwndsz#/33823251/
     # RespRatio = logical determining whether to scale values so minimum effect = 1 (response ratio)
@@ -350,6 +373,14 @@ getAAr <- function(p,minmax=c(1e-12,1e-5),RespRatio=TRUE)
 
 getParam <- function(drmod)
 {
+    #' Extract parameters from dose-response models (drm objects)
+    #' 
+    #' Function to extract relevant parameter values and other extracted metrics from
+    #'  dose-response model (drm) objects generated by the \code{drc} package used by
+    #'  \code{diprate}.
+    #' @param drmod \emph{drm} object
+    #' @return data.frame of extracted parameters and metrics (with confidence intervals)
+    #' 
     if(class(drmod) != 'drc') {message('getParam() requires drm object'); return(invisible(NA))}
     # obtain model formula to determine name of dependent variable    
     yname <- drmod$dataList$names$orName
@@ -394,6 +425,9 @@ getParam <- function(drmod)
 
 plotMultiCurve <- function(drm_list, norm=FALSE, leg.scale=0.75, ...)
 {
+    #' Plot multiple dose-response curves on single graph
+    #' 
+    #' 
     if(class(drm_list) != 'list' | !all(lapply(drm_list,class) == 'drc'))
     {
         message('plotMultiCurve needs list of drm objects')
@@ -432,6 +466,9 @@ plotMultiCurve <- function(drm_list, norm=FALSE, leg.scale=0.75, ...)
 
 effectAtMeanIC50 <- function(drmlist=drc,drugname='erlotinib',sig=3)
 {
+    #' Effect at mean IC50 value
+    #' 
+    #' 
     # find mean IC50 across all cell lines for a particular drug
     # then calculate the relative effect induced by that concentration in each cell line
     drms <- drmByDrug(drmlist,drug_name=drugname)
@@ -446,6 +483,9 @@ effectAtMeanIC50 <- function(drmlist=drc,drugname='erlotinib',sig=3)
 
 effectAtMedianEC50 <- function(drmlist=drc,drugname='erlotinib',sig=3)
 {
+    #' Effect at median EC50 value
+    #' 
+    #' 
     # find mean IC50 across all cell lines for a particular drug
     # then calculate the relative effect induced by that concentration in each cell line
     drms <- drmByDrug(drmlist,drug_name=drugname)

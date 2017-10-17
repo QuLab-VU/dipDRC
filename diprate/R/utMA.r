@@ -3,9 +3,15 @@ utMA <- function(values,times,tau=24)
     #' Unequal time-step (simple) moving average
     #' 
     #' Function to calculate time-averaged values over a moving window of specified size
-    #' Modified from code found in: "Algorithms for Unevenly Spaced Time Series: Moving Averages and Other Rolling Operators"
-    #'  by Andreas Eckner. 
+    #' Modified from code found in: "Algorithms for Unevenly Spaced Time Series: Moving 
+    #'  Averages and Other Rolling Operators" by Andreas Eckner. 
     #'  Default tau assumes times are in hours and observations occur approximately 3/day
+    #' 
+    #' The algorithm weight the observations (e.g. cell counts) within a moving window of
+    #' time, with weighting of the observations based on different algorithms. The
+    #' weighting algorithm in the utMA function is based on the use of rectangles as the 
+    #' area of observations over time window that is added and subtracted from the
+    #' time window as it progresses through the range of times.
     #' 
     #' @param values numeric vector
     #' @param times numeric or difftime vector of same length as \emph{values}
@@ -50,7 +56,7 @@ utMA <- function(values,times,tau=24)
 }
 
 
-trapezoid_ <- function(x1, x2, x3, y1, y3) 
+.trapezoid <- function(x1, x2, x3, y1, y3) 
 {
     #' Function to calculate area of a trapezoid
     #' 
@@ -67,21 +73,23 @@ trapezoid_ <- function(x1, x2, x3, y1, y3)
 
 utMAlin <- function(values,times,tau=24)
 {
-    #' Unequal time-step (simple) moving average
+    #' Unequal time-step moving average - linear 
     #' 
-    #' Function to calculate time-averaged values over a moving window of specified size. 
+    #' Function to calculate time-averaged values over a moving window of specified size
+    #' Modified from code found in: "Algorithms for Unevenly Spaced Time Series: Moving 
+    #'  Averages and Other Rolling Operators" by Andreas Eckner. 
+    #'  Default tau assumes times are in hours and observations occur approximately 3/day
     #' 
-    #' Modified from code found in: 
-    #' "Algorithms for Unevenly Spaced Time Series: Moving Averages and Other Rolling Operators"
-    #'  by Andreas Eckner. 
+    #' The algorithm weight the observations (e.g. cell counts) within a moving window of
+    #'  time, with weighting of the observations based on different algorithms. The
+    #'  weighting algorithm in the utMAlin function is based on the use of \emph{trapezoids}
+    #'  as the area of observations over time window that is added and subtracted from the
+    #'  time window as it progresses through the range of times.
     #' 
-    #' Default tau assumes times are in hours and observations occur approximately 3/day
-    #'  
     #' @param values numeric vector
     #' @param times numeric or difftime vector of same length as \emph{values}
     #' @param tau numeric of length 1 defining the window size
     #' @return numeric vector of same length as \emph{values} 
-    # utMA = unequal time-step (simple) moving average
     #' 
     # code modified from: http://www.eckner.com/papers/ts_alg.pdf
     # default tau assumes times are in hours and observations occur approximately 3/day
@@ -113,7 +121,7 @@ utMAlin <- function(values,times,tau=24)
         }
 
         # Add truncated area on left end
-        left_area <- trapezoid_(times[max(1, left-1)], t_left_new, times[left],
+        left_area <- .trapezoid(times[max(1, left-1)], t_left_new, times[left],
             values[max(1, left-1)], values[left]); 
         
         roll_area <- roll_area + left_area;
@@ -128,7 +136,7 @@ utMAlin <- function(values,times,tau=24)
 
 countToMA <- function(dat,col2avg='cell.count',tau=12,dig=3)
 {
-    #' Function to obtain time averaged cell counts
+    #' Function to obtain time-averaged cell counts
     #' 
     # tau is time window used to cacluate average
     out <- dat

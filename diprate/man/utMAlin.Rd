@@ -2,7 +2,7 @@
 % Please edit documentation in R/utMA.r
 \name{utMAlin}
 \alias{utMAlin}
-\title{Unequal time-step (simple) moving average}
+\title{Unequal time-step moving average - linear}
 \usage{
 utMAlin(values, times, tau = 24)
 }
@@ -17,12 +17,15 @@ utMAlin(values, times, tau = 24)
 numeric vector of same length as \emph{values}
 }
 \description{
-Function to calculate time-averaged values over a moving window of specified size.
+Function to calculate time-averaged values over a moving window of specified size
+Modified from code found in: "Algorithms for Unevenly Spaced Time Series: Moving 
+ Averages and Other Rolling Operators" by Andreas Eckner. 
+ Default tau assumes times are in hours and observations occur approximately 3/day
 }
 \details{
-Modified from code found in: 
-"Algorithms for Unevenly Spaced Time Series: Moving Averages and Other Rolling Operators"
- by Andreas Eckner.
-
-Default tau assumes times are in hours and observations occur approximately 3/day
+The algorithm weight the observations (e.g. cell counts) within a moving window of
+ time, with weighting of the observations based on different algorithms. The
+ weighting algorithm in the utMAlin function is based on the use of \emph{trapezoids}
+ as the area of observations over time window that is added and subtracted from the
+ time window as it progresses through the range of times.
 }

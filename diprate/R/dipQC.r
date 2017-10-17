@@ -110,16 +110,21 @@ findCtrlDIP <- function(times, counts, ids,
     col.names=c('time','cell.counts','well'),
     type='mean')
 {
-	# data should be filtered first using filterCtrlData()
-	# ids = unique identifier for each sample (usually a well from an experiment)
-	# assumes counts in linear scale (i.e. direct cell counts)
-
-    # 
-    # types
-    #
-    # max: identify the sample(s) with the most data points, sum them and fit a lm
-    # sum: use all samples trimmed to the fewest data points, sum them and fit a lm
-    # mean: use all samples, fitting lm separately to each and return the average
+    #' Find control DIP rate
+    #' 
+	#' @param times numeric or difftime vector 
+    #' @param counts vector of cell counts (assumed in linear scale, i.e. direct cell counts)
+	#' @param ids character vector of unique identifier for each sample (usually a well from an experiment)
+    #' @param col.names character vector of column names for output
+    #' @param type character of function to apply to replicates; default is \emph{mean}
+    #' 
+	#' data should be filtered first using filterCtrlData()
+    #' 
+    #' Other acceptable type values: \itemize{
+    #' \item{\emph{max}: identify the sample(s) with the most data points, sum them and fit a lm},
+    #' \item{\emph{sum}: use all samples trimmed to the fewest data points, sum them and fit a lm},
+    #' \item{\emph{mean}: use all samples, fitting lm separately to each and return the average}}
+    #' 
 
     dip   <- numeric()
     dip.temp <- numeric()
@@ -183,6 +188,10 @@ findCtrlDIP <- function(times, counts, ids,
 
 timeAtTH <- function(times,counts,threshold=1000)
 {
+    #' Time at threshold
+    #' 
+    #' Function to determine first time a threshold value is achieved
+    #' 
     # ensure ordered by time
     counts <- counts[order(times)]
     times <- times[order(times)]
@@ -192,10 +201,15 @@ timeAtTH <- function(times,counts,threshold=1000)
 controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'), 
     plotIt=TRUE, ctrl.type='mean', cell.line.name="", ret.type='counts', ...)
 {
-    # expecting data to be from a single cell line
-    # will filter data for consistency with exponential growth and return
-    # a data.frame with a single set of time points and the estimated cell counts
-    # undefined arguments will be passed to plot function
+    #' Quality control of control wells
+    #' 
+    #' Function to identify \emph{ids} for which \emph{counts} are exponential over range of \emph{times}.
+    #' 
+    #' Data passing QC can also be plotted (default). Data are expected to be from a single cell line
+    #' undefined arguments will be passed to plot function
+    #' will filter data for consistency with exponential growth and return
+    #' @return data.frame with a single set of time points and the estimated cell counts
+    #' 
     arglist <- list(...)
     if('min.ar2' %in% names(arglist))
     {
@@ -299,6 +313,8 @@ findMaxCounts <- function(times, counts, ids, min.ar2=0.99, verbose=TRUE)
 
 prepDataCLD <- function(dat, drug, drug.col="drug1")
 {
+    #' Prepare data by cell line and drug
+    #'
 	# examine well data for each Cell.line
     if(length(drug)>1)
     {
@@ -311,7 +327,10 @@ prepDataCLD <- function(dat, drug, drug.col="drug1")
 
 getGCargs <- function(dat, arg.name=c('time','cell.count','ids'),dat.col=c('time','cell.count','well'))
 {
-	# converts data from data frame into a list of arguments that can be passed to other functions
+    #' Get growth curve arguments
+    #' 
+	#' Converts data from \code{data.frame} into a \code{list} of arguments that can be 
+	#'  passed to other functions.
 	# this is a temporary function that will require more work to ensure robustness
     out <- list()
     for(a in arg.name) out[[a]] <- dat[,dat.col[match(a,arg.name)]]
