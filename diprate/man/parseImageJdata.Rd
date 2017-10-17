@@ -2,10 +2,10 @@
 % Please edit documentation in R/dataExtractFxns.r
 \name{parseImageJdata}
 \alias{parseImageJdata}
-\title{Extract cell count data from ImageJ file}
+\title{Extract cell count data from ImageJ export file}
 \usage{
 parseImageJdata(dataFol, fileName, mapName)
 }
 \description{
-Extract cell count data from ImageJ file
+Extract cell count data from ImageJ export file
 }

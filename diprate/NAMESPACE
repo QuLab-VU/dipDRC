@@ -1,2 +1,10 @@
 exportPattern("^[[:alpha:]]+")
-import(drc)
+import("drc")
+importFrom("grDevices", "adjustcolor", "dev.new", "dev.off", "grey",
+         "pdf")
+importFrom("graphics", "abline", "curve", "legend", "lines", "mtext",
+         "par", "plot", "polygon")
+importFrom("stats", "aggregate", "coef", "confint", "formula", "lm",
+         "median", "nls", "predict", "sd", "uniroot")
+importFrom("utils", "head", "read.csv", "read.delim",
+         "setTxtProgressBar", "tail", "txtProgressBar", "write.csv")

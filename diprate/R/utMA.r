@@ -1,10 +1,18 @@
 utMA <- function(values,times,tau=24)
 {
-# utMA = unequal time-step (simple) moving average
-# code modified from: http://www.eckner.com/papers/ts_alg.pdf
-# update (2017-08-28) http://www.eckner.com/papers/Algorithms%20for%20Unevenly%20Spaced%20Time%20Series.pdf
-# default tau assumes times are in hours and observations occur approximately 3/day
-
+    #' Unequal time-step (simple) moving average
+    #' 
+    #' Function to calculate time-averaged values over a moving window of specified size
+    #' Modified from code found in: "Algorithms for Unevenly Spaced Time Series: Moving Averages and Other Rolling Operators"
+    #'  by Andreas Eckner. 
+    #'  Default tau assumes times are in hours and observations occur approximately 3/day
+    #' 
+    #' @param values numeric vector
+    #' @param times numeric or difftime vector of same length as \emph{values}
+    #' @param tau numeric of length 1 defining the window size
+    #' @return numeric vector of same length as \emph{values} 
+    #' 
+    # \href{ http://www.eckner.com/papers/Algorithms%20for%20Unevenly%20Spaced%20Time%20Series.pdf }{Eckner}
     # if class(times) == 'difftime' convert to numeric
     if(class(times) == 'difftime')    times <- as.numeric(times)
 
@@ -42,8 +50,10 @@ utMA <- function(values,times,tau=24)
 }
 
 
-trapezoid <- function(x1, x2, x3, y1, y3) 
+trapezoid_ <- function(x1, x2, x3, y1, y3) 
 {
+    #' Function to calculate area of a trapezoid
+    #' 
     if (x2 == x3 | x2 < x1)
     {
         return((x3 - x2) * y1)
@@ -54,11 +64,28 @@ trapezoid <- function(x1, x2, x3, y1, y3)
     }
 }
 
+
 utMAlin <- function(values,times,tau=24)
 {
-# utMA = unequal time-step (simple) moving average
-# code modified from: http://www.eckner.com/papers/ts_alg.pdf
-# default tau assumes times are in hours and observations occur approximately 3/day
+    #' Unequal time-step (simple) moving average
+    #' 
+    #' Function to calculate time-averaged values over a moving window of specified size. 
+    #' 
+    #' Modified from code found in: 
+    #' "Algorithms for Unevenly Spaced Time Series: Moving Averages and Other Rolling Operators"
+    #'  by Andreas Eckner. 
+    #' 
+    #' Default tau assumes times are in hours and observations occur approximately 3/day
+    #'  
+    #' @param values numeric vector
+    #' @param times numeric or difftime vector of same length as \emph{values}
+    #' @param tau numeric of length 1 defining the window size
+    #' @return numeric vector of same length as \emph{values} 
+    # utMA = unequal time-step (simple) moving average
+    #' 
+    # code modified from: http://www.eckner.com/papers/ts_alg.pdf
+    # default tau assumes times are in hours and observations occur approximately 3/day
+    # \href{ http://www.eckner.com/papers/Algorithms%20for%20Unevenly%20Spaced%20Time%20Series.pdf }{Eckner}
 
     # if class(times) == 'difftime' convert to numeric
     if(class(times) == 'difftime')    times <- as.numeric(times)
@@ -86,7 +113,7 @@ utMAlin <- function(values,times,tau=24)
         }
 
         # Add truncated area on left end
-        left_area <- trapezoid(times[max(1, left-1)], t_left_new, times[left],
+        left_area <- trapezoid_(times[max(1, left-1)], t_left_new, times[left],
             values[max(1, left-1)], values[left]); 
         
         roll_area <- roll_area + left_area;
@@ -101,6 +128,8 @@ utMAlin <- function(values,times,tau=24)
 
 countToMA <- function(dat,col2avg='cell.count',tau=12,dig=3)
 {
+    #' Function to obtain time averaged cell counts
+    #' 
     # tau is time window used to cacluate average
     out <- dat
     out[,col2avg] <- round(utMAlin(dat[,col2avg],dat$time,tau=tau),dig)

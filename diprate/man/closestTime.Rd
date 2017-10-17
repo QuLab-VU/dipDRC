@@ -2,8 +2,7 @@
 % Please edit documentation in R/dataExtractFxns.r
 \name{closestTime}
 \alias{closestTime}
-\title{Find closest time in vector to comparator
-Function to identify the value in a time series that is closest to a comparator}
+\title{Find closest time in vector to comparator}
 \usage{
 closestTime(mytime, timevec, out = "pos")
 }
@@ -16,6 +15,5 @@ closestTime(mytime, timevec, out = "pos")
 diff = difference between closest value and /emph{mytime})}
 }
 \description{
-Find closest time in vector to comparator
 Function to identify the value in a time series that is closest to a comparator
 }

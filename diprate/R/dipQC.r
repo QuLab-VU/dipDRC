@@ -1,6 +1,13 @@
 
 nEach <- function(ids)
 {
+    #' Count the number of each unique item
+    #'
+    #' Given a vector of items, identify and count how many of each unique item is present
+    #' 
+    #' @param ids vector
+    #' @return named integer of counts for each unique item in \code{ids}
+    #'
     out <- integer()
     for(i in unique(ids)) out <- append(out,length(ids[ids==i]))
     names(out) <- unique(ids)
@@ -9,6 +16,13 @@ nEach <- function(ids)
 
 firstInstPos <- function(vec)
 {
+    #' Find the position of the first occurrence of each unique item
+    #'
+    #' Given a vector of items, identify the first position of each unique item
+    #' 
+    #' @param vec a character, numeric or integer vector
+    #' @return named integer of indexed positions for each unique item in \code{vec}
+    #'
     out <- match(unique(vec), vec)
     names(out) <- unique(vec)
     out
@@ -16,10 +30,22 @@ firstInstPos <- function(vec)
 
 filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
 {
-	# Determine whether cell counts are exponentially increasing throughout the entire time span
-	# times and counts for which adjusted R2 value is >= min.ar2 argument are returned
-	# ids = unique identifier for each sample (usually a well from an experiment)
-	# assumes counts in linear scale (i.e. direct cell counts)
+	#' Filter control data
+	#' 
+	#' Determine whether cell counts are exponentially increasing throughout the entire time span
+	#'  times and counts for which adjusted R2 value is >= min.ar2 argument are returned
+	#'  ids = unique identifier for each sample (usually a well from an experiment)
+	#'  assumes counts in linear scale (i.e. direct cell counts)
+    #'
+    #' @param times vector of times
+    #' @param counts vector of cell counts
+    #' @param ids vector of unique identifiers used to separate groups
+    #' @param min.ar2 numeric of minimum value for adjusted R-squared value of linear model fit
+    #' @param verbose logical whether to show progress
+    #' 
+    #' @return data.frame of times, counts, and ids for control data passing filter (i.e.,
+    #'  linear (in log scale) with adj R-squared value less than \code{min.ar2})
+    #'
     dip   <- numeric()
     dtk.times <- integer()
     dtk.counts <- integer()

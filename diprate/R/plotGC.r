@@ -42,7 +42,8 @@ plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.lin
     mtext(side=2, 'log2(cell number)', font=2, line=2)
     dip.val <- round(dip$dip,4)
     dip.95conf <- round(abs(dip.val-confint(dip$best.model)[2,1]),5)
-    legend("bottomright", c(paste('DIP =',dip.val),paste0('  ±',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
+    # \xf1 is ascii form of plus-minus symbol
+    legend("bottomright", c(paste('DIP =',dip.val),paste0('  \xf1',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
     curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=0,to=150,add=TRUE, col='red', lwd=3)
     
     try(polygon(    x=c(dip$start.time, 150, 150),

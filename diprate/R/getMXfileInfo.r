@@ -1,60 +1,19 @@
 getMXfileInfo <- function(top_dir='/Volumes/quaranta/VDIPRR/HTS004', toFile=FALSE)
 {
-	# use PlateInfo.MBK files generated during MetaXpress image exports
-	# to identify sets of file names that quantify nuclei or FUCCI
-
-	# ALGORITHM
-	# 1) start from root directory (e.g. HTS001)
-	# 2) find all subdirectory names recursively
-	# 3) identify all subdirs containing 'Plate'
-	# 4) find 'PlateInfo.MBK' file in each 'Plate' subdir
-	# 5) extract information and assemble into new data.frame
-	# 6) save data.frame as CSV file in root directory
-
-	my.file.browse <- function (root=getwd(), multiple=F) {
-		# .. and list.files(root)
-		x <- c( dirname(normalizePath(root)), list.files(root,full.names=T) )
-		isdir <- file.info(x)$isdir
-		obj <- sort(isdir,index.return=T,decreasing=T)
-		isdir <- obj$x
-		x <- x[obj$ix]
-		lbls <- sprintf('%s%s',basename(x),ifelse(isdir,'/',''))
-		lbls[1] <- sprintf('../ (%s)', basename(x[1]))
-
-		files <- c()
-		sel = -1
-		while ( TRUE ) {
-			sel <- menu(lbls,title=sprintf('Select file(s) (0 to quit) in folder %s:',root))
-			if (sel == 0 )
-				break
-			if (isdir[sel]) {
-				# directory, browse further
-				files <- c(files, my.file.browse( x[sel], multiple ))
-				break
-			} else {
-				# file, add to list
-				files <- c(files,x[sel])
-				if ( !multiple )
-					break
-				# remove selected file from choices
-				lbls <- lbls[-sel]
-				x <- x[-sel]
-				isdir <- isdir[-sel]
-			}
-		}
-		return(files)
-	}
-
-	# load dataExtractFxns.r
-	# found in the dipQC github repo
-	# https://github.com/QuLab-VU/dipQC.git
-	if(exists('parseMBK')) { message('dataExtractFxns already loaded') } else {
-		cat('\n\n')
-		message('Please locate the local file <dataExtractFxns.r> in the dipQC git repo')
-		def			<-	my.file.browse(root='..')
-		file.loc	<-	paste0(dirname(def),'/')
-		if(grep('dataExtract',def)) source(def,chdir=TRUE)
-	}
+	#' Parse MetaXpress PlateInfo.MBK files
+	#' 
+	#' Use PlateInfo.MBK files generated during MetaXpress image exports
+	#'  to identify sets of file names that quantify nuclei or FUCCI
+    #' @param top_dir path to directory in which PlateInfo.MBK and images are found
+    #' @param toFile logical whether to write output to file
+    #' 
+	#' ALGORITHM
+	#' \itemize{\item{Start from root directory (e.g. HTS001)},
+	#' \item{Find all subdirectory names recursively},
+	#' \item{Identify all subdirs containing 'Plate'},
+	#' \item{Find 'PlateInfo.MBK' file in each 'Plate' subdir},
+	#' \item{Extract information and assemble into new \code{data.frame}},
+	#' \item{Save data.frame as CSV file in root directory}}
 
 	getPlateInfo <- function(MBKfilePath)
 	{
