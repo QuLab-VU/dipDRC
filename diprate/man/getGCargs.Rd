@@ -8,6 +8,6 @@ getGCargs(dat, arg.name = c("time", "cell.count", "ids"),
   dat.col = c("time", "cell.count", "well"))
 }
 \description{
-Converts data from \code{data.frame} into a \code{list} of arguments that can be 
+Converts data from \code{data.frame} into a \code{list} of arguments that can be
  passed to other functions.
 }

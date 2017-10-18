@@ -4,7 +4,7 @@ nEach <- function(ids)
     #' Count the number of each unique item
     #'
     #' Given a vector of items, identify and count how many of each unique item is present
-    #' 
+    #'
     #' @param ids vector
     #' @return named integer of counts for each unique item in \code{ids}
     #'
@@ -19,7 +19,7 @@ firstInstPos <- function(vec)
     #' Find the position of the first occurrence of each unique item
     #'
     #' Given a vector of items, identify the first position of each unique item
-    #' 
+    #'
     #' @param vec a character, numeric or integer vector
     #' @return named integer of indexed positions for each unique item in \code{vec}
     #'
@@ -31,7 +31,7 @@ firstInstPos <- function(vec)
 filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
 {
 	#' Filter control data
-	#' 
+	#'
 	#' Determine whether cell counts are exponentially increasing throughout the entire time span
 	#'  times and counts for which adjusted R2 value is >= min.ar2 argument are returned
 	#'  ids = unique identifier for each sample (usually a well from an experiment)
@@ -42,7 +42,7 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
     #' @param ids vector of unique identifiers used to separate groups
     #' @param min.ar2 numeric of minimum value for adjusted R-squared value of linear model fit
     #' @param verbose logical whether to show progress
-    #' 
+    #'
     #' @return data.frame of times, counts, and ids for control data passing filter (i.e.,
     #'  linear (in log scale) with adj R-squared value less than \code{min.ar2})
     #'
@@ -50,14 +50,14 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
     dtk.times <- integer()
     dtk.counts <- integer()
     dtk.ids  <- character()
-    
+
     for(i in unique(ids))
-    { 
+    {
      if(verbose) message(paste('Processing',i))
 
      ttf <- times[ids==i]
      ctf <- log2(counts[ids==i])
-     
+
      if(length(ttf) < 5)
      {
       message(paste('Need at least 5 data points for ',i))
@@ -79,8 +79,8 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
       if(!is.na(summary(lm(y ~ x))$adj.r.squared))
       {
        pass <- summary(lm(y ~ x))$adj.r.squared >= min.ar2
-      } else { 
-       pass <- FALSE 
+      } else {
+       pass <- FALSE
       }
 
       if(pass)
@@ -96,35 +96,35 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
      {
       if(verbose) message(paste('The first 5 pts of ids =',i,'is not linear within ar2 =',min.ar2))
       next
-     } else { 
+     } else {
       dtk.times <- append(dtk.times,x)
       dtk.counts <- append(dtk.counts,floor(2^y))
       dtk.ids <- append(dtk.ids, rep(i,length(x)))
      }
     }
-    
+
     data.frame(times=dtk.times,counts=dtk.counts,ids=dtk.ids)
 }
 
-findCtrlDIP <- function(times, counts, ids, 
+findCtrlDIP <- function(times, counts, ids,
     col.names=c('time','cell.counts','well'),
     type='mean')
 {
     #' Find control DIP rate
-    #' 
-	#' @param times numeric or difftime vector 
+    #'
+	#' @param times numeric or difftime vector
     #' @param counts vector of cell counts (assumed in linear scale, i.e. direct cell counts)
 	#' @param ids character vector of unique identifier for each sample (usually a well from an experiment)
     #' @param col.names character vector of column names for output
     #' @param type character of function to apply to replicates; default is \emph{mean}
-    #' 
+    #'
 	#' data should be filtered first using filterCtrlData()
-    #' 
+    #'
     #' Other acceptable type values: \itemize{
     #' \item{\emph{max}: identify the sample(s) with the most data points, sum them and fit a lm},
     #' \item{\emph{sum}: use all samples trimmed to the fewest data points, sum them and fit a lm},
     #' \item{\emph{mean}: use all samples, fitting lm separately to each and return the average}}
-    #' 
+    #'
 
     dip   <- numeric()
     dip.temp <- numeric()
@@ -133,7 +133,7 @@ findCtrlDIP <- function(times, counts, ids,
     {
      m <- list()
      for(i in unique(ids))
-     { 
+     {
       x <- times[ids==i]
       y <- log2(counts[ids==i])
       m[[i]] <- lm(y ~ x)
@@ -143,12 +143,12 @@ findCtrlDIP <- function(times, counts, ids,
      dip <- mean(dip.temp)
      dip <- append(dip, sd(dip.temp)/sqrt(length(dip.temp)))
      names(dip) <- c('mean.dip','std.err')
-     
+
      count.t0 <- floor(mean(sapply(unique(ids), FUN=function(x) head(counts[ids==x],1))))
      dts.times <- unique(times)
      dts.counts <- c(count.t0,floor(count.t0*2^(dip[1]*dts.times[-1])))
     }
-    
+
     if(type=='max')
     {
      n   <- nEach(ids)
@@ -164,7 +164,7 @@ findCtrlDIP <- function(times, counts, ids,
      dts.times <- a$dts.times
      dts.counts <- a$dts.counts
     }
-    
+
     if(type=='sum')
     {
      n   <- nEach(ids)
@@ -179,7 +179,7 @@ findCtrlDIP <- function(times, counts, ids,
      dts.times <- a$dts.times
      dts.counts <- a$dts.counts
     }
-    
+
     out.data <- data.frame(dts.times,dts.counts)
     colnames(out.data) <- col.names[1:2]
 
@@ -189,27 +189,27 @@ findCtrlDIP <- function(times, counts, ids,
 timeAtTH <- function(times,counts,threshold=1000)
 {
     #' Time at threshold
-    #' 
+    #'
     #' Function to determine first time a threshold value is achieved
-    #' 
+    #'
     # ensure ordered by time
     counts <- counts[order(times)]
     times <- times[order(times)]
     ifelse(!any(counts > threshold),max(times),min(times[counts > threshold]))
 }
 
-controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'), 
+controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'),
     plotIt=TRUE, ctrl.type='mean', cell.line.name="", ret.type='counts', ...)
 {
     #' Quality control of control wells
-    #' 
+    #'
     #' Function to identify \emph{ids} for which \emph{counts} are exponential over range of \emph{times}.
-    #' 
+    #'
     #' Data passing QC can also be plotted (default). Data are expected to be from a single cell line
     #' undefined arguments will be passed to plot function
     #' will filter data for consistency with exponential growth and return
     #' @return data.frame with a single set of time points and the estimated cell counts
-    #' 
+    #'
     arglist <- list(...)
     if('min.ar2' %in% names(arglist))
     {
@@ -221,11 +221,11 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
      names(fd.args) <- c('times','counts','ids')
     }
     fd <- do.call(filterCtrlData,fd.args)
-    
+
     times <- fd$times
     counts <- fd$counts
     ids <- as.character(fd$ids)
-    
+
     # remove outlier ids ( > 1 sd from the mean)
     #
     # ids = unique identifier for each sample (usually a well from an experiment)
@@ -233,28 +233,28 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
     m <- lm(log2(counts) ~ times * ids)
     rates <- coef(m)[grepl('times',names(coef(m)))]
     rates <- c(rates[1],rates[-1]+rates[1])
-    
+
     ids.ok <-  names(rates[rates < mean(rates)+sd(rates) & rates > mean(rates)-sd(rates)])
     ids.ok <- gsub('times:ids','',ids.ok)
-    
+
     times <- times[ids %in% ids.ok]
     counts <- counts[ids %in% ids.ok]
     ids <- ids[ids %in% ids.ok]
 
     fd <- data.frame(times,counts,ids)
     fd$ids <- as.character(fd$ids)
-    
-    if(plotIt) 
+
+    if(plotIt)
     {
      plot.args <- append(list(fd[,1],fd[,2],fd[,3],fd[,3], cell.line.name),arglist)
-     names(plot.args)[1:5] <- c('x','y','uid','rep','main') 
+     names(plot.args)[1:5] <- c('x','y','uid','rep','main')
      do.call(plotGC, plot.args)
     }
     all.out <- findCtrlDIP(fd[,1],fd[,2],fd[,3], col.names=col.names, type=ctrl.type)
     out <- all.out$data
     if(plotIt) lines(out[,1],log2norm(out[,2],ids=1), lwd=3)
     if(ret.type=='all')
-     out <- list( 
+     out <- list(
       control.counts=out,
       control.type=ctrl.type,
       passed.qc=fd,
@@ -266,16 +266,25 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
 
 findMaxCounts <- function(times, counts, ids, min.ar2=0.99, verbose=TRUE)
 {
-	# To determine at what density cell counts are no longer increasing exponentially
-	# times and counts for which adjusted R2 value is >= min.ar2 argument are returned
-	# ids = unique identifier for each sample (usually a well from an experiment)
-	# assumes counts in linear scale (i.e. direct cell counts)
+    #' Function to determine cell density above which cells do not proliferate exponentially
+    #'
+    #' To determine at what density cell counts are no longer increasing exponentially
+	#'  times and counts for which adjusted R2 value is >= min.ar2 argument are returned
+	#' @param times numeric or difftime vector
+    #' @param counts vector of cell counts (assumed in linear scale, i.e. direct cell counts)
+	#' @param ids character vector of unique identifier for each sample (usually a well from an experiment)
+    #' @param min.ar2 numeric of minimum value of adjusted R2 of linear model fit
+    #'  to consider proliferation as exponential
+    #' @param verbose logical of amount of information sent to stdout during processing
+    #'
+	#' Variable \emph{counts} is assumed to be in linear scale (i.e. direct cell counts)
+    #'
     max.exp.counts <- integer()
     max.ids  <- character()
     max.count.time <- numeric()
-    
+
     for(i in unique(ids))
-    { 
+    {
      ttf <- times[ids==i]
      ctf <- log2(counts[ids==i])
 
@@ -294,18 +303,18 @@ findMaxCounts <- function(times, counts, ids, min.ar2=0.99, verbose=TRUE)
      # capture last position where adjusted R^2 value <= min.ar2
       if(summary(lm(y ~ x))$adj.r.squared <= min.ar2) break
      }
-     
+
      if(summary(lm(y ~ x))$adj.r.squared < min.ar2 & l == 5)
      {
       if(verbose) message(paste('The first 5 pts of ids =',i,'is not linear within ar2 =',min.ar2))
       next
-     } else { 
+     } else {
       max.exp.counts <- append(max.exp.counts,floor(2^y[l]))
       max.ids <- append(max.ids, i)
       max.count.time <- append(max.count.time,x[l])
      }
     }
-    
+
     out <- data.frame(max.exp.counts=max.exp.counts,ids=max.ids,max.count.time=max.count.time)
     out$ids <- as.character(out$ids)
     out
@@ -328,8 +337,8 @@ prepDataCLD <- function(dat, drug, drug.col="drug1")
 getGCargs <- function(dat, arg.name=c('time','cell.count','ids'),dat.col=c('time','cell.count','well'))
 {
     #' Get growth curve arguments
-    #' 
-	#' Converts data from \code{data.frame} into a \code{list} of arguments that can be 
+    #'
+	#' Converts data from \code{data.frame} into a \code{list} of arguments that can be
 	#'  passed to other functions.
 	# this is a temporary function that will require more work to ensure robustness
     out <- list()

@@ -2,10 +2,17 @@ if(!(exists('findDIP'))) message('WARNING: findDIP not found. plotGC_DIPfit requ
 
 plotGC <- function(x, y, uid, rep=uid, y.type='count', color=TRUE, leg=TRUE, ...)
 {
-    # x = time
-    # y = counts (linear or log scale)
-    # uid = unique condition
-    # rep = replicate id
+    #' Plot growth curve
+    #'
+    #' @param x numeric vector of times
+    #' @param y numeric vector of cell counts
+    #' @param uid character vector of unique conditions
+    #' @param rep character vector of replicate identifier
+    #' @param y.type character string of type of cell count data (linear or log scale)
+    #' @param color logical whether plot should be colorized
+    #' @param leg logical whether to add legend to plot
+    #' @return NULL
+
     ifelse(y.type=='count',
         plot.y <- log2norm(y,ids=uid),
         plot.y <- y)
@@ -16,23 +23,33 @@ plotGC <- function(x, y, uid, rep=uid, y.type='count', color=TRUE, leg=TRUE, ...
         for(id in unique(uid))
             lines(x[uid==id & rep==myrep],plot.y[uid==id & rep==myrep], col=rep.col[match(myrep,urep)])
     if(leg) legend('topleft',legend=urep,col=rep.col,lwd=1)
+    return(NULL)
 }
 
 plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.line.met='none',...)
 {
+    #' Plot growth curve with DIP rate estimate
+    #'
+    #' @param dtp data.frame of data to plot
+    #' @param tit character of plot title
+    #' @param toFile logical whether to save plot to file
+    #' @param newDev logical whether to produce new device for each plot
+    #' @param add.line.met character of metric for DIPfit function
+    #' @return numeric of DIP rate
+    #'
     stuff <- list(...)
     if('o' %in% names(stuff) & tit=='rmse')    tit <- paste(tit,'with o =',stuff[['o']])
     dip <- findDIP(dtp,...)
     add.line <- FALSE
-    if(add.line.met != 'none')    
-    {    
+    if(add.line.met != 'none')
+    {
         add.line <- TRUE
         dip2 <- findDIP(dtp,met=add.line.met)
     }
 
     fn <- paste(tit,nrow(dtp),'points.pdf')
     if('metric' %in% names(stuff))    tit <- paste(tit,stuff[['metric']])
-    
+
     if(newDev & !toFile)    dev.new(width=7.5, height=3)
     if(newDev &toFile)    pdf(file=fn, width=7.5, height=3)
     if(newDev) par(mfrow=c(1,3), oma=c(0,0,1,0))
@@ -45,12 +62,12 @@ plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.lin
     # \xf1 is ascii form of plus-minus symbol
     legend("bottomright", c(paste('DIP =',dip.val),paste0('  \xf1',dip.95conf),paste0('start =',round(dip$start.time,1))), bty='n', pch="")
     curve(coef(dip$best.model)[1]+coef(dip$best.model)[2]*x,from=0,to=150,add=TRUE, col='red', lwd=3)
-    
+
     try(polygon(    x=c(dip$start.time, 150, 150),
         y=c(coef(dip$best.model)[1]+coef(dip$best.model)[2]*dip$start.time,
         coef(dip$best.model)[1]+confint(dip$best.model)[2,1]*150,
         coef(dip$best.model)[1]+confint(dip$best.model)[2,2]*150), col=adjustcolor("gray",alpha.f=0.4), density=NA))
-    
+
     abline(v=dip$start.time, lty=2)
     if(add.line)    abline(v=dip2$start.time, lty=3, col='red')
 
@@ -60,7 +77,7 @@ plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.lin
     mtext(side=2, 'adj R2', font=2, line=2)
     abline(v=dip$start.time, lty=2)
     if(add.line)    abline(v=dip2$start.time, lty=3, col='red')
-    
+
     # plotting graph of RMSE
     plot(dip$eval.times,dip$rmse, ylim=c(0,0.5), xlab=NA, ylab=NA, main=NA)
     mtext(side=1, 'Time (h)', font=2, line=2)
@@ -77,6 +94,12 @@ plotGC_DIPfit <- function(dtp, tit='unknown', toFile=FALSE, newDev=TRUE, add.lin
 
 plotCtrlGC <- function(dat=d, type=c('raw','lin')[1], uniq='plate.name', ...)
 {
+    #' Plot control growth curves
+    #'
+    #' @param dat data.frame of data to plot
+    #' @param type character of type of cell count data
+    #' @param uniq character of unique identifier
+    #' @return NULL
     prepMultiGCplot()
     for(u in unique(dat[,uniq]))
     {
@@ -88,10 +111,12 @@ plotCtrlGC <- function(dat=d, type=c('raw','lin')[1], uniq='plate.name', ...)
             raw = plotGC(dtp$time, dtp$cell.count, dtp$uid, dtp$uid, ...)
         )
     }
+    return(NULL)
 }
 
-plotRaw <- function(dat=ad, id.name='cell.line', toFile=FALSE, fn='RawGC', ...) 
+plotRaw <- function(dat=ad, id.name='cell.line', toFile=FALSE, fn='RawGC', ...)
 {
+    #' Plot raw cell count data
     # id.name = parameter to subset data by
     for(id in unique(dat[,id.name]))
     {
@@ -106,6 +131,9 @@ plotRaw <- function(dat=ad, id.name='cell.line', toFile=FALSE, fn='RawGC', ...)
 plotCellLineDrug <- function(dat=ad, expt.date='20160513',
     toFile=FALSE,max.count=NA, max.count.type='by.cell.line',plotFit=FALSE, verbose=FALSE)
 {
+    #' Plot cell count data by cell line and drug
+    #'
+    #' deprecated - will be removed
     out <- data.frame()
     if(is.na(max.count) & max.count.type!='by.cell.line')
         max.count <- min(findMaxCounts(dat$time,dat$cell.count,paste(dat$cell.line,dat$well,sep='_'),verbose=verbose))
@@ -118,7 +146,7 @@ plotCellLineDrug <- function(dat=ad, expt.date='20160513',
             max.count <- min(findMaxCounts(dfm$time,dfm$cell.count,dfm$well,verbose=verbose))
         }
         d <- prepCountData(dat[dat$cell.line==cl,], max.cell.count=max.count)
-        
+
         fn <- paste(expt.date,cl,'growth curves.pdf')
         if(!toFile)    dev.new(width=11,height=8.5)
         if(toFile)    pdf(file=fn, width=11,height=8.5)
@@ -158,7 +186,8 @@ plotCellLineDrug <- function(dat=ad, expt.date='20160513',
 
 plotAllDrugs <- function(dat, drug.col='drug1', uid='well', output=FALSE, ...)
 {
-    # dat expected output from prepCountData 
+    #' Plot all data by drug
+    # dat expected output from prepCountData
     cl <- unique(dat$cell.line)
     if(length(cl)>1)
     {
@@ -182,6 +211,7 @@ plotAllDrugs <- function(dat, drug.col='drug1', uid='well', output=FALSE, ...)
 
 plotFrac <- function(dat,frac.cn='ch2posfrac',...)
 {
+    #' Plot fraction of cells
     x <- dat$time
     y <- dat[,frac.cn]
     uid <- dat$uid
@@ -195,11 +225,12 @@ plotFrac <- function(dat,frac.cn='ch2posfrac',...)
 
 plotAllCh2 <- function(datlist=pd, toFile=FALSE)
 {
-    lapply(names(datlist), function(cl) 
+    #' Plot all channel 2
+    lapply(names(datlist), function(cl)
         {
             prepMultiGCplot(toFile=toFile,fn=paste('Ch2PosPlots_',cl,'.pdf',sep=''))
             drugs <- setdiff(unique(datlist[[cl]]$drug1),'control')
-            lapply(drugs, function(dr) 
+            lapply(drugs, function(dr)
             {
                 dat <- ssCLD(datlist[[cl]],cl=cl,drug=dr)
                 dat <- dat[order(dat$drug1.conc),]

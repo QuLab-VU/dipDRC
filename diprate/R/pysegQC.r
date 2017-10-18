@@ -1,11 +1,12 @@
-# rabbitMQ/celery/py-seg processing sometimes causes problems with 
+# rabbitMQ/celery/py-seg processing sometimes causes problems with
 # data output file (column names not added correctly) and missing well data
-# 
+#
 # Identify bad data files, correct column names and generate MXtaskArgs file
 # to process missing data; can do this in place on bigdata server
 
 fixAllBadColnames <- function(file_dir,...)
 {
+    #' Fix colnames in file_paths
     if(dir.exists(file_dir))
     {
         file_paths <- dir(file_dir, full.names=TRUE)
@@ -18,13 +19,14 @@ fixAllBadColnames <- function(file_dir,...)
 
 fixBadColnames <- function(dat,cn=c("cell_count","file_name","plate_id","well"),overwrite=FALSE)
 {
+    #' Fix bad colnames
     if(class(dat)=='character')
-    {    
+    {
         file_path <- dat
         if(file.exists(file_path))
             temp <- read.csv(file_path, as.is=TRUE)
     } else if(class(dat)=='data.frame') temp <- dat
-    
+
     if(colnames(temp)[1] != "cell_count")
     {
         message('Bad colnames in ',tail(unlist(strsplit(file_path,'/')),1))
@@ -39,15 +41,17 @@ fixBadColnames <- function(dat,cn=c("cell_count","file_name","plate_id","well"),
 
 findMissing <- function(fi,datapath="",verbose=FALSE)
 {
-    # function to locate all missing cell_count data and generate MXtaskArgs file 
-    # for further/repeat processing using celery/rabbitMQ/py-seg
+    #' Identify missing cell count data
+    #'
+    #' Function to locate all missing cell_count data and generate MXtaskArgs file
+    #'  for further/repeat processing using celery/rabbitMQ/py-seg
 
     # <fipath> should be the path to the fileInfo file in the directory <root_dir>
     # which may or may not also contain the data in the subdirectory named <Segmentation>
     # if <datapath> is specified, Segmentation directory will not be serched for data
-    # if <datapath> not specified and <Segmentation> directory does not contain any 
+    # if <datapath> not specified and <Segmentation> directory does not contain any
     # files containing "cellcounts.csv", returns NA
-    
+
     if(class(fi)!='data.frame')
     {
         # read imageFileInfo file to get list of all images, wells and plate_ids
@@ -60,7 +64,7 @@ findMissing <- function(fi,datapath="",verbose=FALSE)
             fi <- read.csv(fipath, as.is=TRUE)
         }
     }
-    
+
     if(datapath=="" | !any(grepl('cellcount.csv',dir(datapath))))
     {
         message('No data found. Must specify <datapath> containing cellcount.csv files')
@@ -91,7 +95,7 @@ findMissing <- function(fi,datapath="",verbose=FALSE)
         if(nrow(temp) < 308)
         {
             missing_wells <- wells[sapply(wells, function(x) !(x %in% temp$well))]
-            if(verbose) 
+            if(verbose)
                 message(paste(length(missing_wells),'wells without cell count data in ',
                     tail(unlist(strsplit(fn,'/')),1)))
             for(w in missing_wells)
@@ -109,14 +113,21 @@ findMissing <- function(fi,datapath="",verbose=FALSE)
 
 makeMissingTaskArgs <- function(misdat,fi,defargs=list(),root_dir='/mnt/quaranta/VDIPRR/HTS006')
 {
+    #' Generate /@task arguments for missing data
+    #'
+    #' If value exists in \emph{defargs}, use to replace values below
+    #' @param misdat data.frame of missing data (image file names and associated annotation)
+    #' @param fi data.frame of file information
+    #' @param defargs list of default arguments to include
+    #' @param root_dir character or path to root directory containing image files
+    #' @return data.frame of py-seg \@task arguments
+    #'
 
-    # if value exists in defargs should use to replace values below
-    # default values
     ch2_ip <- 'None'
     gp <- '/mnt/quaranta/VDIPRR/Control_images/MXgain_new.tif'
     rp <- 'False'
     wats <- 'True'
-    
+
     for(n in names(defargs)[names(defargs) %in% c('ch2_ip','rp','wats')])
     {
         if(n == 'ch2_ip') ch2_ip <- defargs[[n]]
@@ -124,10 +135,10 @@ makeMissingTaskArgs <- function(misdat,fi,defargs=list(),root_dir='/mnt/quaranta
         if(n == 'rp') rp <- defargs[[n]]
         if(n == 'wats') wats <- defargs[[n]]
     }
-    
+
     # generate a list of arguments for MXtasksSmoother.py
     # ordered alphabetically since this is default behavior in Python pandas.DataFrame.to_csv
-        
+
     # should verify all file_name in misdat in fileInfo (fi)
     fns <- fi$file_name
     if(!all(misdat$file_name %in% fns))
@@ -135,12 +146,12 @@ makeMissingTaskArgs <- function(misdat,fi,defargs=list(),root_dir='/mnt/quaranta
         message('Not all missing data files found in fileInfo file. Quitting')
         return(NA)
     }
-    
+
     nip <- paste(root_dir,'/Plate',as.integer(misdat$plate_id),'/',as.character(misdat$file_name),sep='')
     pid <- as.integer(misdat$plate_id)
     sp <- paste0(root_dir,'/Segmentation')
     well <- as.character(misdat$well)
-    
+
     out <- data.frame(
         ch2_im_path=as.character(rep(ch2_ip,length(nip))),    # channel 2 image path
         gain_path=as.character(gp),                            # gain image path
@@ -156,6 +167,13 @@ makeMissingTaskArgs <- function(misdat,fi,defargs=list(),root_dir='/mnt/quaranta
 
 makeTaskArgs <- function(fi,root_dir,defargs=list(),...)
 {
+    #' Make /@task arguments for image processing with py-seg
+    #'
+    #' @param fi data.frame of file information
+    #' @param defargs list of default arguments to include
+    #' @param root_dir character or path to root directory containing image files
+    #' @return data.frame of py-seg \@task arguments
+    #'
     # default values
     rp <- 'FALSE'
     ch1_name <- 'Cy3'
@@ -163,7 +181,7 @@ makeTaskArgs <- function(fi,root_dir,defargs=list(),...)
     expdir <- ''
     sp <- file.path(root_dir,'Segmentation')
     owrite <- 'TRUE'
-    
+
     # if value exists in defargs, should use to replace values below
     for(n in names(defargs)[names(defargs) %in% c('rp','regprops','ch1_name','ch2_name','expdir','gp','sp','overwrite','owrite')])
     {
@@ -178,7 +196,7 @@ makeTaskArgs <- function(fi,root_dir,defargs=list(),...)
     args <- as.list(substitute(list(...)))[-1L]
     # generate a list of arguments for MXtasksSmoother.py or MXtasksMod.py (which has two extra parameters)
     # ordered alphabetically since this is default behavior in Python pandas.DataFrame.to_csv
-    
+
     nip <- paste(root_dir,expdir,'/Plate',as.integer(fi[fi$channel==ch1_name,'plate_id']),'/',as.character(fi[fi$channel==ch1_name,'file_name']),sep='')
     if(ch2_name != 'None')
         ch2_ip <- paste(root_dir,expdir,'/Plate',as.integer(fi[fi$channel==ch2_name,'plate_id']),'/',as.character(fi[fi$channel==ch2_name,'file_name']),sep='')
@@ -186,7 +204,7 @@ makeTaskArgs <- function(fi,root_dir,defargs=list(),...)
         ch2_ip <- rep('None',length(nip))
     pid <- as.integer(fi[fi$channel==ch1_name,'plate_id'])
     well <- as.character(fi[fi$channel==ch1_name,'well'])
-    
+
     out <- data.frame(
         ch2_im_path=as.character(ch2_ip),               # channel 2 image path
         nuc_im_path=as.character(nip),                  # nuclei image path
@@ -211,6 +229,17 @@ makeTaskArgs <- function(fi,root_dir,defargs=list(),...)
 
 assemPlateData <- function(segdirpath,count_re='cellcount',pids='', toFile=FALSE)
 {
+    #' Assemble plate data
+    #'
+    #' Function searches through directory containing cell count output files from py-seg image
+    #'  segmentation, load the files, and assembles them into a single \code{data.frame}
+    #' @param segdirpath character of path to directory containing segmentation output
+    #' @param count_re regular expression to search for to identify cell count data files
+    #' @param pids character of plate ids
+    #' @param toFile logical to determine whether to save output file
+    #' @return data.frame of assembled cell count data
+    #'
+
     out <- data.frame()
     if(pids[1] != '')
     {
@@ -222,9 +251,9 @@ assemPlateData <- function(segdirpath,count_re='cellcount',pids='', toFile=FALSE
             return(invisible(NA))
         }
     } else { pds <- list.dirs(segdirpath, full.names=TRUE, recursive=FALSE) }
-    
+
     pb <- txtProgressBar(1,length(pds), style=3)
-    for(p in pds) 
+    for(p in pds)
     {
         files <- list.files(p, full.names=TRUE)
         files <- files[grepl(count_re,files)]
@@ -235,7 +264,7 @@ assemPlateData <- function(segdirpath,count_re='cellcount',pids='', toFile=FALSE
         # if data acquisition is not same throughout experiment, may have different number of
         # columns in py-seg output; this will add extra columns to accruing data.frame <out>
         # to match colnames of newest data file to be added
-        if(ncol(dat) > ncol(out)) 
+        if(ncol(dat) > ncol(out))
         {
             newcn <- setdiff(colnames(dat),colnames(out))
             temp <- data.frame(matrix(ncol=length(newcn),nrow=nrow(out)))
@@ -255,6 +284,15 @@ assemPlateData <- function(segdirpath,count_re='cellcount',pids='', toFile=FALSE
 
 assembleCountData <- function(filepaths)
 {
+    #' Assemble cell count data
+    #'
+    #' Function reads cell count output files from py-seg image segmentation, load the files,
+    #' and assembles them into a single \code{data.frame}. Usually run after all cell count
+    #' files have been copied or moved into a single directory.
+    #'
+    #' @param filepaths  character vector of paths to segmentation output files
+    #' @return data.frame of assembled cell count data
+    #'
     readFiles <- function(fp) {out <- read.csv(fp,as.is=TRUE); out[,!grepl('X',colnames(out))]}
     out <- sapply(filepaths, readFiles, simplify=FALSE)
 
@@ -279,7 +317,7 @@ assembleCountData <- function(filepaths)
 
 prepPysegArgs <- function(finfo, rootdir, expdir='', ch2_name='FITC', savefi=FALSE, momlogpath='', ...)
 {
-    # generic function to prepare data.frame of py-seg arguments
+    #' Generic function to prepare data.frame of py-seg arguments
     # finfo == fileInfo; can be path to fileInfo file, path to or data.frame of fileInfo
     if(finfo =='new')
     {
@@ -301,6 +339,6 @@ prepPysegArgs <- function(finfo, rootdir, expdir='', ch2_name='FITC', savefi=FAL
         { fi <- read.csv(finfo,as.is=TRUE)
         } else { message('could not find fileInfo');return(NA)}
     }
-    
+
     makeTaskArgs(fi,root_dir=rootdir, defargs=as.list(data.frame(ch2_name=ch2_name,expdir=expdir)),...)
 }

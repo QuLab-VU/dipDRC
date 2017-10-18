@@ -1,15 +1,15 @@
-# Parse MetaExpress output files
-# header of ATF file (Molecular Devices output format) contains 
-# most of the needed annotation information
-
-# use single output file from baseline reads as test file
-#
-#
-# 20160829: Problem with some data files not containing plate.name in header
-# Will assume if only 6 columns that plate.name is missing
-#
 parseATFfile <- function(path.to.file)
 {
+    #' Parse MetaExpress output files
+    #'
+    #' Function reads ATF file (Molecular Devices output format) that contains
+    #'  most of the needed annotation information to associate with cell count data
+    # use single output file from baseline reads as test file
+    #
+    # 20160829: Problem with some data files not containing plate.name in header
+    # Will assume if only 6 columns that plate.name is missing
+    #
+
 	fn <- path.to.file
 	h <- read.delim(fn, nrows=5, as.is=TRUE)[4,1]
 	h <- unlist(strsplit(h,'_'))
@@ -21,7 +21,7 @@ parseATFfile <- function(path.to.file)
 	d <- read.csv(fn, skip=6, sep='\t', header=TRUE)
 
 	d <- d[,1:7]	# only keep columns 1:7
-	
+
 	renameCN <- function(coln)
 	{
 		new.name <- switch(coln,
@@ -33,9 +33,9 @@ parseATFfile <- function(path.to.file)
 			Positive.W2..MultiWaveScoring. = "s_g2.count")
 		ifelse(is.null(new.name),coln,new.name)
 	}
-	
+
 	colnames(d) <- sapply(colnames(d), renameCN)
-	
+
 
 	# ensure only known columns are included
 	# proper column names
