@@ -248,3 +248,26 @@ plotAllCh2 <- function(datlist=pd, toFile=FALSE)
         }
     )
 }
+
+plotMultiGC <- function(dat, id='plate.name', uid='well', fnb='MultiGC_by_', toFile=FALSE, ...)
+{
+    #' Plot multiple growth curves
+    #'
+    #' @param dat data.frame of data to plot
+    #' @param id character of identifier of data to be separately plotted
+    #' @param uid character of unique identifier of data for each growth curve within a plot
+    #' @return list of data.frames of \emph{dat} separated by \emph{id}
+
+    prepMultiGCplot(toFile=toFile,fn=paste(fnb,id,'.pdf',sep=''))
+
+    out <- list()
+    ids <- sort(unique(dat[,id]))
+    for(i in ids)
+    {
+        dtp <- dat[dat[,id]==i,]
+        dtp <- dtp[order(dtp[,uid],dtp$time),]
+        plotGC(dtp$time,dtp$cell.count, dtp[,uid], main=i, ...)
+        out[[i]] <- dtp
+    }
+    invisible(out)
+}
