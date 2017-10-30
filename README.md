@@ -3,12 +3,16 @@ The dipDRC code has now been compiled into a complete R package including rudime
 (1) data handling, (2) DIP rate extraction and quality control, and (3) plotting and dose-response curve analysis.
 
 ## Downloading/installing
-The `diprate` package is available as a compiled tarball package (code that should run on any machine).
+Downloading and installing the `diprate` package requires the `devtools` package, which should be available from any CRAN mirror. You should be able to type `install.packages(devtools)` in the R console to install it.
 
-Download the file, uncompress the `diprate` directory, and use `devtools::load_all(<path_to_diprate>)`
+The `diprate` package is available in this Git repository as a compiled tarball package (code that should run on any machine).
 
-Alternatively, the package can be installed directly from GitHub using R and your user authentication. This requires the `devtools` package, which should be available from any CRAN mirror. You can modify the following R code to your system:
+There are at least two different ways for installing the package, once you have the `devtools` package installed:
+1) Download the tarball file, uncompress the file to unpack the `diprate` directory, and type `devtools::load_all(<path_to_diprate>)` in the R console.
+
+2) Alternatively, the package can be installed directly from GitHub using R and your user authentication. You can modify the following R code to your system:
 `devtools::install_github("QuLab-VU/dipDRC", subdir="diprate", user="<GitHub username>", auth_token="<GitHub auth token>")`
 
 Follow the links to learn more about the [install_github](https://www.rdocumentation.org/packages/devtools/versions/1.13.3/topics/install_github) function in the `devtools` package and [GitHub authentication tokens](https://github.com/settings/tokens) 
 
+Questions? Contact d.tyson at vanderbilt.edu
