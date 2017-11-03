@@ -285,24 +285,31 @@ myll4 <- function(x,b,c,d,e)
     c + ( (d - c) / (1 + exp(b*(log(x) - log(e)))))
 }
 
-addLL4curve <- function(drmodel, fromval=1e-12, toval=1e-5, norm=FALSE, ...)
+addLL4curve <- function (drmodel, fromval = 1e-12, toval = 1e-05, norm = FALSE, ...)
 {
-    #' Add 4-parameter log-logistic curve to plot
+    #' Add 4-parameter log-logistic model curve
     #'
-    param <- coef(drmodel)
+    #' @param drmodel either \code{drc} or \code{numeric} of \code{drc} paramaters
+    #' @param fromval numeric of lower limit of concentration range to plot
+    #' @param toval numeric of upper limit of concentration range to plot
+    #' @param norm logical of whether to scale the curve to max value of 1
+    #'
+    #' Function to add a curve of a 4-parameter log-logistic function to a preexisting plot
+    #'
+    if(class(drmodel)=='drc') param <- coef(drmodel)
+    if(class(drmodel)=='numeric') param <- drmodel
     names(param) <- letters[2:5]
-    if(norm)
-    {
+    if (norm) {
         param[2] <- param[2]/param[3]
         param[3] <- 1
-        if(param[2] > param[3])
-        {
+        if (param[2] > param[3]) {
             temp <- param[2]
             param[2] <- param[3]
             param[3] <- temp
         }
     }
-    curve(do.call(myll4,args=append(list(x),as.list(param))), from=fromval, to=toval,add=TRUE,...)
+    curve(do.call(myll4, args = append(list(x), as.list(param))),
+        from = fromval, to = toval, add = TRUE, ...)
 }
 
 

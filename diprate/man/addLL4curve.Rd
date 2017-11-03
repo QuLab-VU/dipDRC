@@ -2,10 +2,21 @@
 % Please edit documentation in R/dipDRC.r
 \name{addLL4curve}
 \alias{addLL4curve}
-\title{Add 4-parameter log-logistic curve to plot}
+\title{Add 4-parameter log-logistic model curve}
 \usage{
 addLL4curve(drmodel, fromval = 1e-12, toval = 1e-05, norm = FALSE, ...)
 }
+\arguments{
+\item{drmodel}{either \code{drc} or \code{numeric} of \code{drc} paramaters}
+
+\item{fromval}{numeric of lower limit of concentration range to plot}
+
+\item{toval}{numeric of upper limit of concentration range to plot}
+
+\item{norm}{logical of whether to scale the curve to max value of 1
+
+Function to add a curve of a 4-parameter log-logistic function to a preexisting plot}
+}
 \description{
-Add 4-parameter log-logistic curve to plot
+Add 4-parameter log-logistic model curve
 }
