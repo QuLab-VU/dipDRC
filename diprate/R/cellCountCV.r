@@ -9,7 +9,8 @@ cellCountCV <- function(rawCVdata, normPos=1) {
     #' have been obtained, outputs a \code{data.frame} with \code{colnames} of
     #' \emph{Row, Column, Well, Cell.count, nl2}. \emph{nl2} is log2 values of \emph{Cell.count}
     #' normalized to \emph{normPos} argument (default = 1).
-
+    out <- data.frame()
+    
     d <- rawCVdata
     d <- d[,c('Column','Row','Cell.Nucleus')]
     # rename Cell.Nucleus to Cell.count
@@ -29,27 +30,26 @@ cellCountCV <- function(rawCVdata, normPos=1) {
     # extract the number of wells we have data for
     numWells <- idx[2]-idx[1]-2
 
-    # assemble data into single structure (a)
+    # assemble data into single structure (out)
     for(tp in time.idx)
      {
       temp <- d[(idx[tp]+1):(idx[tp]+numWells),]
       temp$Time  <- times[tp]
-      a <- ifelse(tp==time.idx[1], temp, rbind(a,temp))
+      out <- rbind(out,temp)
      }
 
-    rownames(a) <- seq(nrow(a))
+    rownames(out) <- seq(nrow(out))
 
     # Generate a column for "Well" in the format RCC
-    a[nchar(a$Column)==1,'Column'] <- paste0('0',a[nchar(a$Column)==1,'Column'])
-    a$Well  <- paste0(a$Row,a$Column)
-    a$Column <- as.integer(a$Column)
+    out$Well  <- fixWellName(paste0(out$Row,out$Column))
+    out$Column <- as.integer(out$Column)
 
     # calculate log2 cell #
-    a   <- a[order(a$Well),]
-    a   <- a[!is.na(a$Cell.count),]
+    out   <- out[order(out$Well),]
+    out   <- out[!is.na(out$Cell.count),]
 
-    a$nl2  <- diprate::log2norm(a$Cell.count, a$Well, norm_idx=normPos)
-    rownames(a) <- NULL
+    out$nl2  <- diprate::log2norm(out$Cell.count, out$Well, norm_idx=normPos)
+    rownames(out) <- NULL
 
-    a
+    return(out)
 }

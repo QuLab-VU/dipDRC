@@ -291,3 +291,34 @@ closestTime <- function(mytime,timevec,out="pos")
         return(r)
     })
 }
+
+swapDrugs <- function(dat, d1='drug1', d2='drug2')
+{
+    #' Swap data between columns using name matching
+    #' 
+    #' @param dat data.frame
+    #' @param d1 character found via grep in one or more columns
+    #' @param d2 character found via grep in one or more columns
+    #' 
+    #' Function generates new temporary \code{data.frame} of columns matching \emph{d2},
+    #'  copies data in columns matching \emph{d1} into columns matching \emph{d2},
+    #'  then replaces columns matching \emph{d1} with columns in temporary \code{data.frame}.
+    #' 
+    #' Useful for swapping names of drugs in drug1 and drug2 in drug combination studies.
+    #' 
+    
+    if(class(dat) != 'data.frame')
+    {
+        message(cat('swapDrugs expecting a data.frame.\n Data not modified'))
+        return(dat)
+    }
+    if(length(grep(d1,colnames(dat))) != length(grep(d2,colnames(dat))))
+    {
+        message(cat('number of column names matching',d1,'and',d2,'must be the same.\n Data not modified'))
+        return(dat)
+    }
+    nd1 <- dat[,grep(d2,colnames(dat))]
+    dat[,grep(d2,colnames(dat))] <- dat[,grep(d1,colnames(dat))]
+    dat[,grep(d1,colnames(dat))] <- nd1
+    dat
+}
