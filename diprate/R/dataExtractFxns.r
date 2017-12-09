@@ -29,34 +29,47 @@ addMapInfo     <- function(dfa,path.to.map)
     #' Add plate map annotations to data.frame
     #'
     #' Function to load plate map file, find relevant locations by well name, and add 
-    #'  annotation Information to data.frame passed as argument
+    #'  annotation information to data.frame passed as argument
     #' @param dfa data.frame of data for annotation
     #' @param path.to.map Path to annotation (plate map) file
     #' 
+    #' map file should be csv file:
+    #' expecting  colnames c('date' or 'expt.date', 'well', 'cell.line', 'drug1', 'drug1.conc', 'drug1.units')
     
     map <- getMapInfo(path.to.map)
-    # map file should be data.frame with minimal colnames:
-    # c('date' or 'expt.date', 'well','cell.line',)
-
     cn <- colnames(map)
-    if(any(grepl('[Dd]ate',cn)))
+
+    # find/make expt.date as long as a colname for 'date' does not already exists in dfa
+    if(!any(grepl('[dD]ate',colnames(dfa))))
     {
-        date         <- unique(map[,grep('[Dd]ate',cn)[1]])
-    } else     date <- substr(path.to.map,1,10)
-    date         <- gsub('-','',date)
-    date         <- date[!grepl("null",date)]
+        if(any(grepl('[Dd]ate',cn))) { 
+            dfa$expt.date <- unique(map[,grep('[Dd]ate',cn)[1]])
+        } else if(grepl("[0-9]{2}-[0-9]{2}-[0-9]{4}", path.to.map)) {
+            dfa$expt.date <- substr(path.to.map,1,10) 
+        } else { 
+            dfa$expt.date <- NA 
+        }
+    }
 
     wellName     <- cn[grep('[Ww]ell',cn)]
     wellNameDFA     <- colnames(dfa)[grep('[Ww]ell',colnames(dfa))]
     if(length(wellName)>1)    wellName <- wellName[nchar(wellName)==4]
-    dfa$expt.date     <- date
-    dfa$cell.line <- map[match(dfa[,wellNameDFA],map[,wellName]),grep('[cC]ell.line',cn)]
-    dfa$drug1     <- map[match(dfa[,wellNameDFA],map[,wellName]),grep('[dD]rug1',cn)]
-    dfa$drug1.conc <- map[match(dfa[,wellNameDFA],map[,wellName]),grepl('[cC]onc1',cn) & !grepl('units',cn)]
-    dfa$drug1.units <- map[match(dfa[,wellNameDFA],map[,wellName]),grepl('[cC]onc1.units',cn)]
-    dfa$drug2     <- map[match(dfa[,wellNameDFA],map[,wellName]),grep('[dD]rug2',cn)]
-    dfa$drug2.conc <- map[match(dfa[,wellNameDFA],map[,wellName]),grepl('[cC]onc2',cn) & !grepl('units',cn)]
-    dfa$drug2.units <- map[match(dfa[,wellNameDFA],map[,wellName]),grepl('[cC]onc2.units',cn)]
+    
+    if(any(grep('[cC]ell.line',cn))) 
+        dfa$cell.line <- as.character(map[match(dfa[,wellNameDFA],map[,wellName]),grep('[cC]ell.line',cn)])
+    dfa$drug1     <- as.character(map[match(dfa[,wellNameDFA],map[,wellName]),grep('[dD]rug1$',cn)])
+    dfa$drug1.conc <- as.numeric(map[match(dfa[,wellNameDFA],map[,wellName]),
+        which(grepl('[cC]onc1$',cn) | grepl('[dD]rug1.conc$',cn))])
+    dfa$drug1.units <- as.character(map[match(dfa[,wellNameDFA],map[,wellName]),
+        which(grepl('[cC]onc1.units',cn) | grepl('[dD]rug1.units',cn))])
+    if(any(grepl('[dD]rug2',cn)))
+    {
+        dfa$drug2     <- as.character(map[match(dfa[,wellNameDFA],map[,wellName]),grep('[dD]rug2$',cn)])
+        dfa$drug2.conc <- as.numeric(map[match(dfa[,wellNameDFA],map[,wellName]),
+            which(grepl('[cC]onc2$',cn) | grepl('[dD]rug2.conc$',cn))])
+        dfa$drug2.units <- as.character(map[match(dfa[,wellNameDFA],map[,wellName]),
+            which(grepl('[cC]onc2.units',cn) | grepl('[dD]rug2.units',cn))])
+    }
     dfa
 }
 

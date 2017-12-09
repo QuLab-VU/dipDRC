@@ -9,9 +9,12 @@ addMapInfo(dfa, path.to.map)
 \arguments{
 \item{dfa}{data.frame of data for annotation}
 
-\item{path.to.map}{Path to annotation (plate map) file}
+\item{path.to.map}{Path to annotation (plate map) file
+
+map file should be csv file:
+expecting  colnames c('date' or 'expt.date', 'well', 'cell.line', 'drug1', 'drug1.conc', 'drug1.units')}
 }
 \description{
 Function to load plate map file, find relevant locations by well name, and add 
- annotation Information to data.frame passed as argument
+ annotation information to data.frame passed as argument
 }
