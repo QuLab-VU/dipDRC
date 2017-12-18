@@ -4,10 +4,12 @@
 \alias{cellCountCV}
 \title{Function to process cell count data in Cellavista multi-measurement format}
 \usage{
-cellCountCV(rawCVdata, normPos = 1)
+cellCountCV(rawCVdata, cellnumcol = "Cell.Nucleus", normPos = 1)
 }
 \arguments{
 \item{rawCVdata}{\emph{data.frame}}
+
+\item{cellnumcol}{\emph{character}}
 
 \item{normPos}{\emph{integer}
 
@@ -15,7 +17,10 @@ Function takes \code{data.frame} of raw cell count data exported from Synentec
 Cellavista and extracts time of image acquisition, identifies wells from which images
 have been obtained, outputs a \code{data.frame} with \code{colnames} of
 \emph{Row, Column, Well, Cell.count, nl2}. \emph{nl2} is log2 values of \emph{Cell.count}
-normalized to \emph{normPos} argument (default = 1).}
+normalized to \emph{normPos} argument (default = 1).
+
+Default column name containing cell counts is \emph{Cell.Nucleus} which is from
+ the \code{Cell Nuclei v1.0} image processing function on the Cellavista instrument.}
 }
 \description{
 Function to process cell count data in Cellavista multi-measurement format

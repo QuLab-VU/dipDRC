@@ -1,7 +1,8 @@
-cellCountCV <- function(rawCVdata, normPos=1) {
+cellCountCV <- function(rawCVdata, cellnumcol='Cell.Nucleus', normPos=1) {
     #' Function to process cell count data in Cellavista multi-measurement format
     #'
     #' @param rawCVdata \emph{data.frame}
+    #' @param cellnumcol \emph{character}
     #' @param normPos \emph{integer}
     #'
     #' Function takes \code{data.frame} of raw cell count data exported from Synentec
@@ -9,10 +10,13 @@ cellCountCV <- function(rawCVdata, normPos=1) {
     #' have been obtained, outputs a \code{data.frame} with \code{colnames} of
     #' \emph{Row, Column, Well, Cell.count, nl2}. \emph{nl2} is log2 values of \emph{Cell.count}
     #' normalized to \emph{normPos} argument (default = 1).
+    #'
+    #' Default column name containing cell counts is \emph{Cell.Nucleus} which is from
+    #'  the \code{Cell Nuclei v1.0} image processing function on the Cellavista instrument.
     out <- data.frame()
-    
+
     d <- rawCVdata
-    d <- d[,c('Column','Row','Cell.Nucleus')]
+    d <- d[,c('Column','Row',cellnumcol)]
     # rename Cell.Nucleus to Cell.count
     colnames(d)[3] <- 'Cell.count'
 
