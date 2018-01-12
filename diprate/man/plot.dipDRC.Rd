@@ -6,6 +6,14 @@
 \usage{
 \method{plot}{dipDRC}(drmo, plot.type = "confidence", showEC50 = TRUE, ...)
 }
+\arguments{
+\item{drmo}{drm object}
+
+\item{plot.type}{character; \emph{type} parameter sent to plot.drc 
+(see \code{plot.drc} in \code{drc} package); default is \emph{confidence}}
+
+\item{showEC50}{logical display EC50 value in plot}
+}
 \description{
 Plot DIP drc (dose-response curve)
 }

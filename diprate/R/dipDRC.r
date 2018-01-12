@@ -31,12 +31,12 @@
 
 rmsd <- function(resid)
 {
-	#' root-mean-square deviation (RMSD) of an estimator == root-mean-square error (RMSE)
-	#'
-	#' When the estimator is unbiased, RMSD is the square root of variance == standard error
-	#'
-	#' RMSD represents the sample standard deviation of the differences between predicted values and observed values.
-	#' @param resid vector or matrix of residuals (difference between the observed and predicted values)
+    #' root-mean-square deviation (RMSD) of an estimator == root-mean-square error (RMSE)
+    #'
+    #' When the estimator is unbiased, RMSD is the square root of variance == standard error
+    #'
+    #' RMSD represents the sample standard deviation of the differences between predicted values and observed values.
+    #' @param resid vector or matrix of residuals (difference between the observed and predicted values)
     sqrt(sum((resid)^2)/length(resid))
 }
 
@@ -247,7 +247,10 @@ plot.dipDRC <- function(drmo, plot.type='confidence', showEC50=TRUE, ...)
 {
     #' Plot DIP drc (dose-response curve)
     #'
-    #'
+    #' @param drmo drm object
+    #' @param plot.type character; \emph{type} parameter sent to plot.drc 
+    #'  (see \code{plot.drc} in \code{drc} package); default is \emph{confidence}
+    #' @param showEC50 logical display EC50 value in plot
     if(is.na(drmo[1]))
     {
         message('DRM object not available to plot')
@@ -273,15 +276,21 @@ plot.dipDRC <- function(drmo, plot.type='confidence', showEC50=TRUE, ...)
 
 myll4 <- function(x,b,c,d,e)
 {
-	#' Four-parameter log-logistic function
-	#'
-	#                           d - c
-	# f(x)  =  c  +  ---------------------------
-	#                1 + exp(b(log(x) - log(e)))
-	#    b: Hill coefficient
-	#    c: lower limit (Emax)
-	#    d: upper limit (Emin)
-	#    e: EC50 (not log scaled)
+    #' Four-parameter log-logistic function
+    #'
+    #' @param x vector of drug concentrations (linear scale), molar units suggested
+    #' @param b Hill coefficient
+    #' @param c lower limit (Emax)
+    #' @param d upper limit (E0)
+    #' @param e EC50 (linear scale); same units as \emph{x}
+    #' 
+    #                           d - c
+    # f(x)  =  c  +  ---------------------------
+    #                1 + exp(b(log(x) - log(e)))
+    #    b: Hill coefficient
+    #    c: lower limit (Emax)
+    #    d: upper limit (Emin)
+    #    e: EC50 (not log scaled)
     c + ( (d - c) / (1 + exp(b*(log(x) - log(e)))))
 }
 
@@ -318,15 +327,17 @@ getAA <- function(p, drugconcrange=c(1e-12,1e-5), minval=-1, norm=TRUE, removeNE
     #' Calculate activity area of dose-response model (drm object)
     #'
     #'
-    # p is dose-response model (drm) from the drc library
-    # response values of less than minval will be replaced with minval
-    # removeNE is logical indicating whether to remove AA values < 0 (no inhbitory effect)
+    #' @param p dose-response model object \code{drm} from the \code{drc} package
+    #' @param drugconcrange numeric of length 2
+    #' @param minval numeric response values of less than minval will be replaced with minval
+    #' @param norm logical normalize response values to 0 as maximum level by subtracting E0 from all values
+    #' @param removeNE logical remove AA values < 0 (no inhbitory effect)
 
-    # normalize response values to 0 as maximum level by subtracting E0 from all values
-    # total area determined by dividing by the number of measurements
-    # This approach is equivalent to that used by Barretina et al. except that higher values
-    # correspond to greater effectiveness of the drug
-    # See doi:10.1038/nature11735
+    #' 
+    #'  total area determined by dividing by the number of measurements
+    #' This approach is equivalent to that used by Barretina et al. except that higher values
+    #'  correspond to greater effectiveness of the drug
+    #' See \link{https://doi.org/10.1038/nature11735}
     if(class(p)=='drc') p <- coef(p)
     if(!(class(p)=='numeric' & length(p)==4))
     {

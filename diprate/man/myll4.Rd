@@ -6,6 +6,17 @@
 \usage{
 myll4(x, b, c, d, e)
 }
+\arguments{
+\item{x}{vector of drug concentrations (linear scale), molar units suggested}
+
+\item{b}{Hill coefficient}
+
+\item{c}{lower limit (Emax)}
+
+\item{d}{upper limit (E0)}
+
+\item{e}{EC50 (linear scale); same units as \emph{x}}
+}
 \description{
 Four-parameter log-logistic function
 }

@@ -7,6 +7,22 @@
 getAA(p, drugconcrange = c(1e-12, 1e-05), minval = -1, norm = TRUE,
   removeNE = FALSE)
 }
+\arguments{
+\item{p}{dose-response model object \code{drm} from the \code{drc} package}
+
+\item{drugconcrange}{numeric of length 2}
+
+\item{minval}{numeric response values of less than minval will be replaced with minval}
+
+\item{norm}{logical normalize response values to 0 as maximum level by subtracting E0 from all values}
+
+\item{removeNE}{logical remove AA values < 0 (no inhbitory effect)
+
+ total area determined by dividing by the number of measurements
+This approach is equivalent to that used by Barretina et al. except that higher values
+ correspond to greater effectiveness of the drug
+See \link{https://doi.org/10.1038/nature11735}}
+}
 \description{
 Calculate activity area of dose-response model (drm object)
 }

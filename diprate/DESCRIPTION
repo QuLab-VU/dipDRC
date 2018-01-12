@@ -15,3 +15,4 @@ Description: Studies of the effects of drugs or other perturbations on cell prol
 License: GPL-3
 Depends: drc (>= 3.0)
 RoxygenNote: 6.0.1
+Imports: drc
