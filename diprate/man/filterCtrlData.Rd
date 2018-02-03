@@ -4,7 +4,8 @@
 \alias{filterCtrlData}
 \title{Filter control data}
 \usage{
-filterCtrlData(times, counts, ids, min.ar2 = 0.99, verbose = FALSE)
+filterCtrlData(times = NULL, counts = NULL, ids = NULL, dat = NULL,
+  min.ar2 = 0.99, verbose = FALSE)
 }
 \arguments{
 \item{times}{vector of times}
@@ -13,6 +14,8 @@ filterCtrlData(times, counts, ids, min.ar2 = 0.99, verbose = FALSE)
 
 \item{ids}{vector of unique identifiers used to separate groups}
 
+\item{dat}{data.frame of times, cell counts and unique identifiers in columns 1:3}
+
 \item{min.ar2}{numeric of minimum value for adjusted R-squared value of linear model fit}
 
 \item{verbose}{logical whether to show progress}
@@ -20,6 +23,9 @@ filterCtrlData(times, counts, ids, min.ar2 = 0.99, verbose = FALSE)
 \value{
 data.frame of times, counts, and ids for control data passing filter (i.e.,
  linear (in log scale) with adj R-squared value less than \code{min.ar2})
+
+Input parameters can be either \code{times}, \code{counts}, and \code{ids}, or a \emph{data.frame}
+ of these in the first three columns
 }
 \description{
 Determine whether cell counts are exponentially increasing throughout the entire time span

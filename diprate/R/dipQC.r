@@ -28,7 +28,7 @@ firstInstPos <- function(vec)
     out
 }
 
-filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
+filterCtrlData <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, min.ar2=0.99, verbose=FALSE)
 {
 	#' Filter control data
 	#'
@@ -40,17 +40,28 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
     #' @param times vector of times
     #' @param counts vector of cell counts
     #' @param ids vector of unique identifiers used to separate groups
+    #' @param dat data.frame of times, cell counts and unique identifiers in columns 1:3 
     #' @param min.ar2 numeric of minimum value for adjusted R-squared value of linear model fit
     #' @param verbose logical whether to show progress
     #'
     #' @return data.frame of times, counts, and ids for control data passing filter (i.e.,
     #'  linear (in log scale) with adj R-squared value less than \code{min.ar2})
-    #'
+    #' 
+    #' Input parameters can be either \code{times}, \code{counts}, and \code{ids}, or a \emph{data.frame}
+    #'  of these in the first three columns
+    #'  
+    
     dip   <- numeric()
     dtk.times <- integer()
     dtk.counts <- integer()
     dtk.ids  <- character()
 
+    if(!is.null(dat))
+    {
+        times <- dat[,1]
+        counts <- dat[,2]
+        ids <- dat[,3]
+    }
     for(i in unique(ids))
     {
      if(verbose) message(paste('Processing',i))
@@ -105,7 +116,6 @@ filterCtrlData <- function(times, counts, ids, min.ar2=0.99, verbose=FALSE)
 
     data.frame(times=dtk.times,counts=dtk.counts,ids=dtk.ids)
 }
-
 findCtrlDIP <- function(times, counts, ids,
     col.names=c('time','cell.counts','well'),
     type='mean')
