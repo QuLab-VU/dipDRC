@@ -355,3 +355,41 @@ getGCargs <- function(dat, arg.name=c('time','cell.count','ids'),dat.col=c('time
     for(a in arg.name) out[[a]] <- dat[,dat.col[match(a,arg.name)]]
     out
 }
+
+aboveMax <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, max.count=3000)
+{
+    #' Function to identify vector positions where cell.count > max.count
+    #' @param times numeric of times at which cell.count was obtained
+    #' @param counts int of number of cells at each \emph{times}
+    #' @param ids character of unique identifiers for \emph{times} and \emph{counts}
+    #' @param dat data.frame of \emph{times}, \emph{counts} and emph{ids} in first three columns
+    #' @param max.count maximum value of \emph{counts} over which the output value is \code{FALSE}
+    #' @return logical of length == \code{length(times)}
+    #' 
+    #' If emph{dat} is provided, all values provided for \emph{times}, \emph{counts} and emph{ids} will be overwritten!
+    #' 
+    if(all(!exists(c('times','counts','ids','dat'))))
+    {
+        message('removeHighCounts() needs some data')
+        return(NA)
+    }
+    if(exists('dat') & class(dat)=='data.frame')
+    {
+        message('aboveMax(): Assuming first three columns in <dat> are: time, cell.count, and uid')
+        times <- dat[,1]
+        counts <- dat[,2]
+        ids <- dat[,3]
+    }
+    out <- rep(FALSE,length(times))
+    for(id in unique(ids))
+    {
+        # find time after which cell.count > max.count
+        # if no cell.count > max.count keep all time points
+        max.time <- ifelse(
+            all(counts[ids == id] < max.count), 
+            max(times[ids == id]), 
+            min(times[ids == id & counts >= max.count]))
+        out[ids == id] <- times[ids == id] > max.time
+    }
+    return(out)
+}

@@ -437,7 +437,7 @@ getParam <- function(drmod)
     # lowest observed value (Emax(observed) in the highest two concentrations of drug)
     emaxobs <- min(dat[dat[,xname] >= max(dat[,xname])/11,yname])
     # lowest relative observed value (Emax(observed) in the highest two concentrations of drug)
-    rremaxobs <- ifelse(yname=='dip', min(dat[dat[,xname] >= max(dat[,xname])/11,'norm.dip']),NA)
+    rremaxobs <- emaxobs/mean(dat[dat[,xname]==0,yname])
 
     out <- rbind(ci,rrEmax,e_halfmax,rr_e_halfmax,ic10[c(1,3,4)],ic50[c(1,3,4)],ic100[c(1,3,4)],
         emaxobs,rremaxobs,aa)
