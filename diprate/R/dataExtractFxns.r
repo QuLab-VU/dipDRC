@@ -143,19 +143,22 @@ extractImageJcounts <- function(rawData)
 getWellRates <- function(raw, time.range=c(70,120))
 {
     #' Determine rates of proliferation of cells in each well over specified time range
-    #' 
+    #' @param raw Raw \emph{data.frame}; expecting colnames of \code{time, well, date, cell.line, nl2}
+    #'  Requires normalized log2(cell.count) \code{nl2} values as a column in \code{raw}
+    #'  Uses linear model fit of  nl2 ~ time within time.range
     timeName <- colnames(raw)[grep('[Tt]ime', colnames(raw))]
     wellName <- colnames(raw)[grep('[Ww]ell',colnames(raw))]
     dateName <- colnames(raw)[grep('[Dd]ate',colnames(raw))]
+    cellLineName <- colnames(raw)[grepl('[cC]ell',colnames(raw)) & grepl('[lL]ine',colnames(raw))]
     if(length(wellName)>1)    wellName <- wellName[nchar(wellName)==4]
     f <- formula(paste('nl2 ~ ',timeName,' * ',wellName))
     m <- lm(f, data=raw[raw[,timeName] > time.range[1] & raw[,timeName] < time.range[2],])
     wells <- unique(raw[,wellName])
     rates <- coef(m)[grep(timeName,names(coef(m)))]
     rates <- c(rates[1],rates[-1]+rates[1])
-    cl     <- unique(raw$cellLine)
+    cl     <- unique(raw[,cellLineName])
     expt <- ifelse(is.null(unique(raw[,dateName])), 'unknown date',unique(raw[,dateName]))
-    out     <- data.frame(Well=wells, DIP=rates, cellLine=cl, Date=expt)
+    out     <- data.frame(well=wells, DIP.rate=rates, cell.line=cl, expt.date=expt)
     rownames(out) <- NULL
     out
 }

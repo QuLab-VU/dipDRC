@@ -6,6 +6,11 @@
 \usage{
 getWellRates(raw, time.range = c(70, 120))
 }
+\arguments{
+\item{raw}{Raw \emph{data.frame}; expecting colnames of \code{time, well, date, cell.line, nl2}
+Requires normalized log2(cell.count) \code{nl2} values as a column in \code{raw}
+Uses linear model fit of  nl2 ~ time within time.range}
+}
 \description{
 Determine rates of proliferation of cells in each well over specified time range
 }
