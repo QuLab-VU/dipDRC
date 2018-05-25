@@ -249,25 +249,30 @@ plotAllCh2 <- function(datlist=pd, toFile=FALSE)
     )
 }
 
-plotMultiGC <- function(dat, id='plate.name', uid='well', fnb='MultiGC_by_', toFile=FALSE, ...)
+plotMultiGC <- function(dat, id='plate.name', uid='well', fnb='MultiGC_by_', toFile=FALSE, tit="", ...)
 {
     #' Plot multiple growth curves
     #'
     #' @param dat data.frame of data to plot
     #' @param id character of identifier of data to be separately plotted
     #' @param uid character of unique identifier of data for each growth curve within a plot
+    #' @param fnb character that will be appended to front of each file name
+    #' @param toFile logical of whether to save each plot to a file
+    #' @param tit character that will be appended to front of each main plot title
     #' @return list of data.frames of \emph{dat} separated by \emph{id}
 
     prepMultiGCplot(toFile=toFile,fn=paste(fnb,id,'.pdf',sep=''))
-
+    passedargs <- list(...)
+    if('main' %in% names(passedargs)) passedargs['main'] <- NULL
     out <- list()
     ids <- sort(unique(dat[,id]))
     for(i in ids)
     {
         dtp <- dat[dat[,id]==i,]
         dtp <- dtp[order(dtp[,uid],dtp$time),]
-        plotGC(dtp$time,dtp$cell.count, dtp[,uid], main=i, ...)
-        out[[i]] <- dtp
+        pgcargs <- append(list(x=dtp$time, y=dtp$cell.count, uid=dtp[,uid], main=paste(tit,i)), passedargs)
+        do.call(plotGC, pgcargs)
+        out[i] <- dtp
     }
     invisible(out)
 }
