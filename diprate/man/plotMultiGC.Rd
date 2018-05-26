@@ -5,7 +5,7 @@
 \title{Plot multiple growth curves}
 \usage{
 plotMultiGC(dat, id = "plate.name", uid = "well", fnb = "MultiGC_by_",
-  toFile = FALSE, ...)
+  toFile = FALSE, tit = "", ...)
 }
 \arguments{
 \item{dat}{data.frame of data to plot}
@@ -13,6 +13,12 @@ plotMultiGC(dat, id = "plate.name", uid = "well", fnb = "MultiGC_by_",
 \item{id}{character of identifier of data to be separately plotted}
 
 \item{uid}{character of unique identifier of data for each growth curve within a plot}
+
+\item{fnb}{character that will be appended to front of each file name}
+
+\item{toFile}{logical of whether to save each plot to a file}
+
+\item{tit}{character that will be appended to front of each main plot title}
 }
 \value{
 list of data.frames of \emph{dat} separated by \emph{id}
