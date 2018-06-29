@@ -117,9 +117,9 @@ extractImageJcounts <- function(data_file_path)
     {
         d[d$well==w,'time'] <- difftime(d[d$well==w,'acq.time'],d[d$well==w,'acq.time'][1], units='hours')
     }
-    a$time <- signif(a$time,3)
     a <- aggregate(cell.count ~ well + time, data=d, FUN=sum)
     a <- a[order(a$well),]
+    a$time <- signif(a$time,3)
     rownames(a) <- NULL
     a
 }
