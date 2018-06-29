@@ -12,7 +12,8 @@ closestTime(mytime, timevec, out = "pos")
 \item{timevec}{numeric or time series of values}
 
 \item{out}{character defining the type of output (pos = position; time = value;
-diff = difference between closest value and /emph{mytime})}
+diff = difference between closest value and /emph{mytime})
+return numeric of `time`, `position`, or `time difference`}
 }
 \description{
 Function to identify the value in a time series that is closest to a comparator

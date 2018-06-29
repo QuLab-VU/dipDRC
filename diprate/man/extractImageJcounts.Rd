@@ -2,10 +2,20 @@
 % Please edit documentation in R/dataExtractFxns.r
 \name{extractImageJcounts}
 \alias{extractImageJcounts}
-\title{Extract ImageJ Counts}
+\title{Extract cell count data from ImageJ export file}
 \usage{
-extractImageJcounts(rawData)
+extractImageJcounts(data_file_path)
+}
+\arguments{
+\item{data_file_path}{path to file exported by ImageJ count object macro
+with either \code{.xls[x]} or \code{.csv} file extension.}
+}
+\value{
+data.frame with column names of `well`, `cell.count` and `time`
 }
 \description{
-Extract ImageJ Counts
+Function extracts cell count data from ImageJ count_nuclei macro output using
+ Cellavista image files as input. Only first two columns are used.
+ First column should be Cellavista image file name. Second column should be
+ cell counts.
 }

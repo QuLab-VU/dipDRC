@@ -17,7 +17,7 @@ makeDil(max.conc = 4000, DF = 4, n = 8, sig = 2)
 }
 \value{
 \emph{n} serial dilutions of \emph{max.conc} with dilution factor \emph{DF}
-and significant digits \emph{sig}
+ and significant digits \emph{sig}
 }
 \description{
 Generate a set of serially diluted values

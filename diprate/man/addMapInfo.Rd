@@ -14,6 +14,9 @@ addMapInfo(dfa, path.to.map)
 map file should be csv file:
 expecting  colnames c('date' or 'expt.date', 'well', 'cell.line', 'drug1', 'drug1.conc', 'drug1.units')}
 }
+\value{
+data.frame with added columns matching column names in map file.
+}
 \description{
 Function to load plate map file, find relevant locations by well name, and add 
  annotation information to data.frame passed as argument

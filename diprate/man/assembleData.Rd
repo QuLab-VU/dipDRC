@@ -9,6 +9,10 @@ assembleData(data.loc = getwd())
 
 assembleData(data.loc = getwd())
 }
+\arguments{
+\item{data.loc}{character of path to data
+return data.frame}
+}
 \description{
 Assemble cell count data with matching plate map files
 
