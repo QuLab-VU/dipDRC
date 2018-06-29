@@ -4,8 +4,15 @@
 \alias{parseImageJdata}
 \title{Extract cell count data from ImageJ export file}
 \usage{
-parseImageJdata(dataFol, fileName, mapName)
+parseImageJdata(data_file_path)
+}
+\arguments{
+\item{data_file_path}{path to file exported from ImageJ with either \code{.xls[x]} or
+\code{.csv} file extension.}
 }
 \description{
-Extract cell count data from ImageJ export file
+Function extracts cell count data from ImageJ count_nuclei macro output using
+ Cellavista image files as input. Only first two columns are used.
+ First column should be Cellavista image file name. Second column should be
+ cell counts.
 }

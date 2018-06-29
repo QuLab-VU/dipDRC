@@ -80,34 +80,46 @@ addDrugInfo     <- function(dfa,path.to.map)
     do.call(addMapInfo,args=list(dfa=dfa,path.to.map=path.to.map))
 }
 
-parseImageJdata <- function(dataFol,fileName,mapName)
+parseImageJdata <- function(data_file_path)
 {
 	#' Extract cell count data from ImageJ export file
     #' 
-    xl <- FALSE
-    if(grepl('.xl', fileName))    xl <- TRUE
-    ifelse(xl, d <- gdata::read.xls(paste0(dataFol,fileName), header=FALSE),
-        d <- read.csv(paste0(dataFol,fileName), as.is=TRUE, header=FALSE))
+    #' Function extracts cell count data from ImageJ count_nuclei macro output using
+    #'  Cellavista image files as input. Only first two columns are used.
+    #'  First column should be Cellavista image file name. Second column should be
+    #'  cell counts.
+    #'  
+    #' @param data_file_path path to file exported from ImageJ with either \code{.xls[x]} or
+    #'  \code{.csv} file extension.
+    #'  
+    containsNumeric <- function(x) !all(is.na(suppressWarnings(as.numeric(x))))
+    if(grepl('[\\.]xlsx*', data_file_path))
+    {
+        d <- readxl::readxl(data_file_path, header=FALSE)
+    } else {
+        d <- read.csv(data_file_path, as.is=TRUE, header=FALSE)
+    }
+
+    # check whether first row is header (not header if any value can be coerced to numeric)
+    if(!containsNumeric(d[1,])) d <- data.frame(d[-1,])
+    # keep only first two columns        
     d         <- d[,1:2]
-    d[,1]     <- as.character(d[,1])
-    colnames(d) <- c('name','cell.count')
-    d$acq.time     <- strptime(substr(d$name, 1, 14), "%Y%m%d%H%M%S")
-    well.temp <- unlist(strsplit(d$name,'-'))
+    colnames(d) <- c('file.name','cell.count')
+    d$cell.count <- as.integer(d$cell.count)
+    d$acq.time     <- strptime(substr(d$file.name, 1, 14), "%Y%m%d%H%M%S")
+    well.temp <- unlist(strsplit(d$file.name,'-'))
     row.temp <- LETTERS[as.numeric(substr(well.temp[grep('R',well.temp)],2,3))]
     col.temp <- substr(well.temp[grep('C',well.temp)],2,3)
     d$well     <- paste0(row.temp,col.temp)
-    d$rel.time <- 0
+    d$time <- 0
     for(w in unique(d$well))
     {
-        d[d$well==w,'rel.time'] <- difftime(d[d$well==w,'acq.time'],d[d$well==w,'acq.time'][1], units='hours')
+        d[d$well==w,'time'] <- difftime(d[d$well==w,'acq.time'],d[d$well==w,'acq.time'][1], units='hours')
     }
-    a <- aggregate(cell.count ~ well + rel.time, data=d, FUN=sum)
+    a$time <- signif(a$time,3)
+    a <- aggregate(cell.count ~ well + time, data=d, FUN=sum)
     a <- a[order(a$well),]
-    a$nl2     <- log2norm(a$cell.count,a$well)
-    map <- getMapInfo(paste0(dataFol,mapName))
-    a$cellLine <- map[match(a$well,map$Well),'Description']
-    a$drug     <- 'PLX4720'
-    a$conc     <- map[match(a$well,map$Well),grep('PLX',colnames(map))]
+    rownames(a) <- NULL
     a
 }
 
