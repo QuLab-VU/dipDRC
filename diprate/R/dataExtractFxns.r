@@ -391,7 +391,8 @@ makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE)
     #' @param count_chan logical whether to infer the number of channels from file names
     #' @param verbose logical whether to send more messages to console during processing
     #'  
-    #' This function 
+    #' @return data.frame with colnames `ch2_im_path`, `nuc_im_path`, `overwrite`
+    #'  `plate_id`, `regprops`, `save_path`, and `well`
     
     do.call(rbind, lapply(datadirs, function(mydir)
     {
@@ -418,7 +419,7 @@ makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE)
 
         # number of time points
         n <- length(im_file_list)
-        im_file_list <- lapply(im_file_list, function(x) as.data.frame(t(parseName(x))))
+        im_file_list <- lapply(im_file_list, function(x) as.data.frame(t(parseCVFileName(x))))
 
         f <- do.call(rbind,lapply(ts_dir, function(ts)
         {

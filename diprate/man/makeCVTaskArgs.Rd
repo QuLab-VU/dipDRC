@@ -11,9 +11,11 @@ makeCVTaskArgs(datadirs, count_chan = TRUE, verbose = TRUE)
 
 \item{count_chan}{logical whether to infer the number of channels from file names}
 
-\item{verbose}{logical whether to send more messages to console during processing
- 
-This function}
+\item{verbose}{logical whether to send more messages to console during processing}
+}
+\value{
+data.frame with colnames `ch2_im_path`, `nuc_im_path`, `overwrite`
+ `plate_id`, `regprops`, `save_path`, and `well`
 }
 \description{
 Make Celery/RabbitMQ task arguments for py-seg image processing of Cellavista image files
