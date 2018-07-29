@@ -1,27 +1,27 @@
 if(!(exists('findDIP'))) message('WARNING: findDIP not found. plotGC_DIPfit requires dipDRC to be loaded.')
 
-plotGC <- function(x, y, uid, rep=uid, y.type='count', color=TRUE, leg=TRUE, ...)
+plotGC <- function(time, cell.count, ids, rep=ids, count.type='linear', color=TRUE, leg=TRUE, ...)
 {
     #' Plot growth curve
     #'
-    #' @param x numeric vector of times
-    #' @param y numeric vector of cell counts
-    #' @param uid character vector of unique conditions
+    #' @param time numeric vector of times
+    #' @param cell.count numeric vector of cell counts
+    #' @param ids character vector of unique conditions (usually \code{well} or \code{uid} values in data)
     #' @param rep character vector of replicate identifier
-    #' @param y.type character string of type of cell count data (linear or log scale)
+    #' @param count.type character string of type of cell count data (linear or log scale)
     #' @param color logical whether plot should be colorized
     #' @param leg logical whether to add legend to plot
     #' @return NULL
-
-    ifelse(y.type=='count',
-        plot.y <- log2norm(y,ids=uid),
-        plot.y <- y)
+    #' 2018-07-29: updated plotGC parameter names to allow better matching with getGCargs (version 0.26)
+    ifelse(count.type=='linear',
+        plot.y <- log2norm(cell.count,ids=ids),
+        plot.y <- cell.count)
     urep <- unique(rep)
     ifelse(color, rep.col <- gplots::colorpanel(n=length(urep),low='blue',mid='orange',high='red'), rep.col <- rep('black',length(urep)))
-    plot(x,plot.y,type='n',...)
+    plot(time,plot.y,type='n',...)
     for(myrep in urep)
-        for(id in unique(uid))
-            lines(x[uid==id & rep==myrep],plot.y[uid==id & rep==myrep], col=rep.col[match(myrep,urep)])
+        for(i in unique(ids))
+            lines(time[ids==i & rep==myrep],plot.y[ids==i & rep==myrep], col=rep.col[match(myrep,urep)])
     if(leg) legend('topleft',legend=urep,col=rep.col,lwd=1)
     return(NULL)
 }

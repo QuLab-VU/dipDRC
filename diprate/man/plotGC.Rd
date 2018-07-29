@@ -4,23 +4,27 @@
 \alias{plotGC}
 \title{Plot growth curve}
 \usage{
-plotGC(x, y, uid, rep = uid, y.type = "count", color = TRUE, leg = TRUE,
-  ...)
+plotGC(time, cell.count, ids, rep = ids, count.type = "linear",
+  color = TRUE, leg = TRUE, ...)
 }
 \arguments{
-\item{x}{numeric vector of times}
+\item{time}{numeric vector of times}
 
-\item{y}{numeric vector of cell counts}
+\item{cell.count}{numeric vector of cell counts}
 
-\item{uid}{character vector of unique conditions}
+\item{ids}{character vector of unique conditions (usually \code{well} or \code{uid} values in data)}
 
 \item{rep}{character vector of replicate identifier}
 
-\item{y.type}{character string of type of cell count data (linear or log scale)}
+\item{count.type}{character string of type of cell count data (linear or log scale)}
 
 \item{color}{logical whether plot should be colorized}
 
 \item{leg}{logical whether to add legend to plot}
+}
+\value{
+NULL
+2018-07-29: updated plotGC parameter names to allow better matching with getGCargs (version 0.26)
 }
 \description{
 Plot growth curve
