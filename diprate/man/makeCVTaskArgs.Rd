@@ -4,14 +4,20 @@
 \alias{makeCVTaskArgs}
 \title{Make Celery/RabbitMQ task arguments for py-seg image processing of Cellavista image files}
 \usage{
-makeCVTaskArgs(datadirs, count_chan = TRUE, verbose = TRUE)
+makeCVTaskArgs(datadirs, count_chan = TRUE, verbose = TRUE, nuc_index = 1,
+  ch2_index = 0)
 }
 \arguments{
-\item{datadirs}{character vector of path(s) to directories containing image data}
+\item{datadirs}{character vector of paths to directory(ies) containing Cellavista images}
 
-\item{count_chan}{logical whether to infer the number of channels from file names}
+\item{count_chan}{logical whether to infer the number of channels}
 
-\item{verbose}{logical whether to send more messages to console during processing}
+\item{verbose}{logical whether to output information during processing}
+
+\item{nuc_index}{integer of position of channel used to image nuclei; default is 1}
+
+\item{ch2_index}{integer of position of 2nd channel to assess positivity compared to
+nuclear segmentation; default is 0 (will not assess second channel, even if it exists)}
 }
 \value{
 data.frame with colnames `ch2_im_path`, `nuc_im_path`, `overwrite`

@@ -384,16 +384,18 @@ getNumChannels <- function(dir_list)
     ifelse(all(out==out[1]),out[1],out)
 }
 
-makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE)
+makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE, nuc_index = 1, ch2_index=0)
 {
     #' Make Celery/RabbitMQ task arguments for py-seg image processing of Cellavista image files
-    #' @param datadirs character vector of path(s) to directories containing image data
-    #' @param count_chan logical whether to infer the number of channels from file names
-    #' @param verbose logical whether to send more messages to console during processing
-    #'  
+    #' @param datadirs character vector of paths to directory(ies) containing Cellavista images
+    #' @param count_chan logical whether to infer the number of channels
+    #' @param verbose logical whether to output information during processing
+    #' @param nuc_index integer of position of channel used to image nuclei; default is 1
+    #' @param ch2_index integer of position of 2nd channel to assess positivity compared to
+    #'  nuclear segmentation; default is 0 (will not assess second channel, even if it exists)
     #' @return data.frame with colnames `ch2_im_path`, `nuc_im_path`, `overwrite`
     #'  `plate_id`, `regprops`, `save_path`, and `well`
-    
+
     do.call(rbind, lapply(datadirs, function(mydir)
     {
         # time series are stored in directories with integer names within the top directory
@@ -409,7 +411,7 @@ makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE)
         # remove non-image file names
         # stitched image montages contain '1280X1280' in the name
         # example: 20160513091010_CH10_C2_R2_1280x1280.jpg
-        im_file_list <- lapply(file_list, function(x) 
+        im_file_list <- lapply(file_list, function(x)
         {
             out <- x[!grepl("1280x1280",x)]
             ftype <- tolower(sapply(out, function(z) strsplit(z,'.',fixed=TRUE)[[1]][2]))
@@ -432,15 +434,15 @@ makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE)
         num_chan <- getNumChannels(file_list)
         if(verbose) message(paste('Found',num_chan,'imaging channel(s) in',basename(mydir)))
         # index position of nuclear image (assuming first); maybe should make this a passed argument
-        nuc_index <- 1
         nuc_im_path <- f$path[seq(0,nrow(f)-1,num_chan)+nuc_index]
         if(verbose) message(paste(length(nuc_im_path),'nuclear images files found in',basename(mydir)))
-        ch2_im_path <- if(num_chan==2 & num_chan!=3)  { f$path[!f$path %in% nuc_im_path] } else { "None" }
+        if(ch2_index == 0) ch2_im_path <- 'None' # default value
+        if(num_chan > 1 & ch2_index !=0) ch2_im_path <- f$path[seq(0,nrow(f)-1,num_chan)+ch2_index]
         if(verbose) message(paste(length(ch2_im_path),'unique ch2 images files found in',basename(mydir)))
         well <- f$well[seq(0,nrow(f)-1,num_chan)+nuc_index]
-        data.frame( ch2_im_path=ch2_im_path, 
-                    nuc_im_path=nuc_im_path, 
-                    overwrite='TRUE', 
+        data.frame( ch2_im_path=ch2_im_path,
+                    nuc_im_path=nuc_im_path,
+                    overwrite='TRUE',
                     plate_id=basename(dirname(nuc_im_path)),
                     regprops='TRUE',
                     save_path=file.path(dirname(dirname(nuc_im_path)),'Segmentation'),
