@@ -1,3 +1,17 @@
+#' @details
+#' A drug-induce proliferation (DIP) rate is defined as the steady-state rate of proliferation
+#'  (in log2 scale) of a population of cells at a particular concentration of drug (which
+#'  can be 0). The \code{diprate} R package is a collection of functions used to process 
+#'  and interpret data consisting of cell counts versus time and relevant treatment
+#'  conditions, such as drugs and drug concentrations.
+#'
+#' The main function in \pkg{diprate} is the \code{\link{findDIP}} function that calculates the
+#'  DIP rate of cell counts over time.
+#' 
+#' @docType package
+#' @name diprate
+#' @keyword internals
+"_PACKAGE"
 
 
 # fifth order polynomial
