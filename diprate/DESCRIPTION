@@ -1,8 +1,8 @@
 Package: diprate
 Type: Package
 Title: Analysis of dose-effect data based on drug-induced cell proliferation (DIP) rates
-Version: 0.27
-Date: 2018-08-17
+Version: 0.28
+Date: 2018-10-10
 Author: Darren R. Tyson
 Maintainer: Darren R. Tyson <d.tyson@vanderbilt.edu>
 Description: Studies of the effects of drugs or other perturbations on cell proliferation 
@@ -14,5 +14,5 @@ Description: Studies of the effects of drugs or other perturbations on cell prol
 	dependent drc package. 
 License: GPL-3
 Depends: drc (>= 3.0)
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 Imports: drc

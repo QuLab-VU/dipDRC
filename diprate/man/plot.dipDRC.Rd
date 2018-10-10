@@ -4,7 +4,8 @@
 \alias{plot.dipDRC}
 \title{Plot DIP drc (dose-response curve)}
 \usage{
-\method{plot}{dipDRC}(drmo, plot.type = "confidence", showEC50 = TRUE, ...)
+\method{plot}{dipDRC}(drmo, plot.type = "confidence", showEC50 = TRUE,
+  ...)
 }
 \arguments{
 \item{drmo}{drm object}

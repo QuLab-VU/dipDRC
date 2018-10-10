@@ -4,9 +4,10 @@
 \alias{dipDRC}
 \title{dipDRC: main function for finding DIP rates from structured data.frame}
 \usage{
-dipDRC(dtf, xName = "time", yName = "cell.count", var = c("cell.line",
-  "drug1", "drug1.conc", "expt.date"), print.dip = FALSE, norm = FALSE,
-  plotIt = TRUE, toFile = FALSE, fct = LL.4(), uidName = "uid", ...)
+dipDRC(dtf, xName = "time", yName = "cell.count",
+  var = c("cell.line", "drug1", "drug1.conc", "expt.date"),
+  print.dip = FALSE, norm = FALSE, plotIt = TRUE, toFile = FALSE,
+  fct = LL.4(), uidName = "uid", ...)
 }
 \description{
 Function uses data.frame of cell counts over time and associates other variables with

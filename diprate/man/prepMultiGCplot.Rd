@@ -4,8 +4,8 @@
 \alias{prepMultiGCplot}
 \title{Prepare device window or file for multiple plots of growth curves}
 \usage{
-prepMultiGCplot(w = 11, h = 8.5, toFile = FALSE, fn = "multiGCplot.pdf",
-  ...)
+prepMultiGCplot(w = 11, h = 8.5, toFile = FALSE,
+  fn = "multiGCplot.pdf", ...)
 }
 \description{
 Prepare device window or file for multiple plots of growth curves

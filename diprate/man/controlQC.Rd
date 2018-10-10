@@ -4,18 +4,19 @@
 \alias{controlQC}
 \title{Quality control of control wells}
 \usage{
-controlQC(times, counts, ids, col.names = c("time", "cell.counts", "uid"),
-  plotIt = TRUE, ctrl.type = "mean", cell.line.name = "",
+controlQC(times, counts, ids, col.names = c("time", "cell.counts",
+  "uid"), plotIt = TRUE, ctrl.type = "mean", cell.line.name = "",
   ret.type = "counts", ...)
 }
 \value{
-data.frame with a single set of time points and the estimated cell counts
+data.frame with a single set of time points and the estimated cell counts (if \code{ret.type} != 'all')
+
+list of integer \code{control.counts}, character \code{control.type}, logical \code{passed.qc},
+ numeric \code{dip rate}, linear model \code{model} (if \code{ret.type} == 'all')
 }
 \description{
 Function to identify \emph{ids} for which \emph{counts} are exponential over range of \emph{times}.
-}
-\details{
-Data passing QC can also be plotted (default). Data are expected to be from a single cell line
-undefined arguments will be passed to plot function
-will filter data for consistency with exponential growth and return
+ Wrapper for \code{filterCtrlData} function plus some other processing.
+Data passing QC can also be plotted (default). Data are expected to be from a single cell line.
+ Undefined arguments will be passed to plot function.
 }

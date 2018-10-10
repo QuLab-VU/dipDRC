@@ -4,7 +4,8 @@
 \alias{getMXfileInfo}
 \title{Parse MetaXpress PlateInfo.MBK files}
 \usage{
-getMXfileInfo(top_dir = "/Volumes/quaranta/VDIPRR/HTS004", toFile = FALSE)
+getMXfileInfo(top_dir = "/Volumes/quaranta/VDIPRR/HTS004",
+  toFile = FALSE)
 }
 \arguments{
 \item{top_dir}{path to directory in which PlateInfo.MBK and images are found}

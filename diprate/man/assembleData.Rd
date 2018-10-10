@@ -2,7 +2,6 @@
 % Please edit documentation in R/dataExtractFxns.r, R/pipelineFxns.r
 \name{assembleData}
 \alias{assembleData}
-\alias{assembleData}
 \title{Assemble cell count data with matching plate map files}
 \usage{
 assembleData(data.loc = getwd())
@@ -14,7 +13,5 @@ assembleData(data.loc = getwd())
 return data.frame}
 }
 \description{
-Assemble cell count data with matching plate map files
-
 Deprecated - to be removed
 }

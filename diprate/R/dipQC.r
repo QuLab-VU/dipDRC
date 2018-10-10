@@ -32,14 +32,12 @@ filterCtrlData <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, min.ar2=
 {
 	#' Filter control data
 	#'
-	#' Determine whether cell counts are exponentially increasing throughout the entire time span
-	#'  times and counts for which adjusted R2 value is >= min.ar2 argument are returned
-	#'  ids = unique identifier for each sample (usually a well from an experiment)
-	#'  assumes counts in linear scale (i.e. direct cell counts)
+	#' Determine whether cell counts are exponentially increasing throughout the entire time span.
+	#'  Assumes \code{counts} are in linear scale (i.e. direct cell counts)
     #'
     #' @param times vector of times
     #' @param counts vector of cell counts
-    #' @param ids vector of unique identifiers used to separate groups
+    #' @param ids vector of unique identifiers used to separate groups (usually a well from an experiment)
     #' @param dat data.frame of times, cell counts and unique identifiers in columns 1:3 
     #' @param min.ar2 numeric of minimum value for adjusted R-squared value of linear model fit
     #' @param verbose logical whether to show progress
@@ -214,11 +212,13 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
     #' Quality control of control wells
     #'
     #' Function to identify \emph{ids} for which \emph{counts} are exponential over range of \emph{times}.
-    #'
-    #' Data passing QC can also be plotted (default). Data are expected to be from a single cell line
-    #' undefined arguments will be passed to plot function
-    #' will filter data for consistency with exponential growth and return
-    #' @return data.frame with a single set of time points and the estimated cell counts
+    #'  Wrapper for \code{filterCtrlData} function plus some other processing.
+    #' Data passing QC can also be plotted (default). Data are expected to be from a single cell line.
+    #'  Undefined arguments will be passed to plot function.
+    #'  
+    #' @return data.frame with a single set of time points and the estimated cell counts (if \code{ret.type} != 'all')
+    #' @return list of integer \code{control.counts}, character \code{control.type}, logical \code{passed.qc},
+    #'  numeric \code{dip rate}, linear model \code{model} (if \code{ret.type} == 'all') 
     #'
     arglist <- list(...)
     if('min.ar2' %in% names(arglist))

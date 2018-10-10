@@ -4,16 +4,15 @@
 \name{diprate}
 \alias{diprate}
 \alias{diprate-package}
-\alias{diprate-package}
 \title{diprate: Analysis of dose-effect data based on drug-induced cell proliferation (DIP) rates}
 \description{
-Studies of the effects of drugs or other perturbations on cell proliferation
-(especially cancer cells grown in culture) have generally been performed using percent
-of viable cells after 72 hours of treatment. We have described the steady-state rate
-of proliferation achieved after any drug equilibration as the drug-induced
-proliferation (DIP) rate. In this package we provide functions to process raw data,
-estimate the DIP rate, and analyze the concentration-dependent effects using the
-dependent drc package.
+Studies of the effects of drugs or other perturbations on cell proliferation 
+	(especially cancer cells grown in culture) have generally been performed using percent 
+	of viable cells after 72 hours of treatment. We have described the steady-state rate 
+	of proliferation achieved after any drug equilibration as the drug-induced 
+	proliferation (DIP) rate. In this package we provide functions to process raw data, 
+	estimate the DIP rate, and analyze the concentration-dependent effects using the 
+	dependent drc package.
 }
 \details{
 A drug-induce proliferation (DIP) rate is defined as the steady-state rate of proliferation

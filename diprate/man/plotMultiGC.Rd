@@ -4,8 +4,8 @@
 \alias{plotMultiGC}
 \title{Plot multiple growth curves}
 \usage{
-plotMultiGC(dat, id = "plate.name", uid = "well", fnb = "MultiGC_by_",
-  toFile = FALSE, tit = "", ...)
+plotMultiGC(dat, id = "plate.name", uid = "well",
+  fnb = "MultiGC_by_", toFile = FALSE, tit = "", ...)
 }
 \arguments{
 \item{dat}{data.frame of data to plot}

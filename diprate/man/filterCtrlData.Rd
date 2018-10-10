@@ -12,7 +12,7 @@ filterCtrlData(times = NULL, counts = NULL, ids = NULL, dat = NULL,
 
 \item{counts}{vector of cell counts}
 
-\item{ids}{vector of unique identifiers used to separate groups}
+\item{ids}{vector of unique identifiers used to separate groups (usually a well from an experiment)}
 
 \item{dat}{data.frame of times, cell counts and unique identifiers in columns 1:3}
 
@@ -28,8 +28,6 @@ Input parameters can be either \code{times}, \code{counts}, and \code{ids}, or a
  of these in the first three columns
 }
 \description{
-Determine whether cell counts are exponentially increasing throughout the entire time span
- times and counts for which adjusted R2 value is >= min.ar2 argument are returned
- ids = unique identifier for each sample (usually a well from an experiment)
- assumes counts in linear scale (i.e. direct cell counts)
+Determine whether cell counts are exponentially increasing throughout the entire time span.
+ Assumes \code{counts} are in linear scale (i.e. direct cell counts)
 }

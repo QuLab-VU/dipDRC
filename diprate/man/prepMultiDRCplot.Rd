@@ -4,8 +4,8 @@
 \alias{prepMultiDRCplot}
 \title{Prepare device window or file for multiple plots of dose-response curves}
 \usage{
-prepMultiDRCplot(w = 11, h = 8.5, toFile = FALSE, fn = "multiDRM.pdf",
-  ...)
+prepMultiDRCplot(w = 11, h = 8.5, toFile = FALSE,
+  fn = "multiDRM.pdf", ...)
 }
 \description{
 Prepare device window or file for multiple plots of dose-response curves

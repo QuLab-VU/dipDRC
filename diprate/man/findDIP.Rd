@@ -5,7 +5,8 @@
 \title{Function to determine DIP rate from cell counts over time}
 \usage{
 findDIP(dtf, name = "unknown", all.models = FALSE, metric = c("opt",
-  "ar2", "rmse")[1], o = 0, dat.type = "cell.counts", print.dip = FALSE)
+  "ar2", "rmse")[1], o = 0, dat.type = "cell.counts",
+  print.dip = FALSE)
 }
 \arguments{
 \item{dtf}{data.frame of data to fit}

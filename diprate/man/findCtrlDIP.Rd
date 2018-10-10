@@ -4,8 +4,8 @@
 \alias{findCtrlDIP}
 \title{Find control DIP rate}
 \usage{
-findCtrlDIP(times, counts, ids, col.names = c("time", "cell.counts", "well"),
-  type = "mean")
+findCtrlDIP(times, counts, ids, col.names = c("time", "cell.counts",
+  "well"), type = "mean")
 }
 \arguments{
 \item{times}{numeric or difftime vector}

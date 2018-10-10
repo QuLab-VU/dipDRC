@@ -4,7 +4,8 @@
 \alias{plotAllDrugs}
 \title{Plot all data by drug}
 \usage{
-plotAllDrugs(dat, drug.col = "drug1", uid = "well", output = FALSE, ...)
+plotAllDrugs(dat, drug.col = "drug1", uid = "well", output = FALSE,
+  ...)
 }
 \description{
 Plot all data by drug
