@@ -1,5 +1,5 @@
 # dipDRC
-The dipDRC code has now been compiled into a complete R package including rudimentary documentation of the functions. The package contains functions that fall into three classes:
+The R code in the dipDRC repository has now been compiled into a complete R package called `diprate` that includes some basic documentation of the functions. The package contains functions that fall into three classes:
 (1) data handling, (2) DIP rate extraction and quality control, and (3) plotting and dose-response curve analysis.
 
 ## Downloading/installing
