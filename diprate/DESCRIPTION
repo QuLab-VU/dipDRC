@@ -15,4 +15,3 @@ Description: Studies of the effects of drugs or other perturbations on cell prol
 License: GPL-3
 RoxygenNote: 6.1.0
 Imports: drc (>= 3.0)
-LazyLoad: yes
