@@ -8,8 +8,8 @@ Downloading and installing the `diprate` package requires the `devtools` package
 The `diprate` package is available in this Git repository as a compiled tarball package (code that should run on any machine).
 
 There are at least two different ways for installing the package, once you have the `devtools` package installed:
-1) If you want to install the package into your R framework, Download the tarball file, uncompress the file to unpack the `diprate` directory and type the following command in the R console: 
-`devtools::install(<path_to/dipDRC/diprate>, type="source", dependencies=TRUE)`
+1) If you want to install the package into your R framework, Download the tarball file onto your computer (e.g. download the file `diprate_0.29.tar.gz` or the most recent version), uncompress the file to unpack the `diprate` directory and type the following command in the R console: 
+`devtools::install(<path_to/dipDRC/diprate>, type="source", dependencies=TRUE)` where `<path_to/dipDRC>` is the directory in which the package was uncompressed.
 
 2) Alternatively, the package can be installed directly from GitHub using R and your user authentication. You can modify the following R code to your system:
 `devtools::install_github("QuLab-VU/dipDRC", subdir="diprate", user="<GitHub username>", auth_token="<GitHub auth token>", dependencies=TRUE)`
