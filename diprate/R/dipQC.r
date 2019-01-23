@@ -199,7 +199,11 @@ timeAtTH <- function(times,counts,threshold=1000)
     #' Time at threshold
     #'
     #' Function to determine first time a threshold value is achieved
-    #'
+    #' @param times numeric of times of measurements (usually relative to time of treatment)
+    #' @param counts integer of number of objects (nuclei) at each measurement time
+    #' @param threshold integer of threshold value of \emph{counts}; default = 1000
+    #' @return numeric of first value of \emph{times} when \emph{counts} exceeds \emph{threshold}
+    
     # ensure ordered by time
     counts <- counts[order(times)]
     times <- times[order(times)]
@@ -210,25 +214,46 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
     plotIt=TRUE, ctrl.type='mean', cell.line.name="", ret.type='counts', ...)
 {
     #' Quality control of control wells
-    #'
+    #' 
     #' Function to identify \emph{ids} for which \emph{counts} are exponential over range of \emph{times}.
-    #'  Wrapper for \code{filterCtrlData} function plus some other processing.
+    #'  Wrapper for \code{filterCtrlData} and \code{findCtrlDIP} functions and other filtering.
+    #' First, data are passed to \code{filterCtrlData} which finds linear model fits to data for each
+    #'  unique \emph{ids} with at least 5 data points and with minimum adjusted R-squared value 
+    #'  greater than 0.99 (default) or the value of the argument \emph{min.ar2}.
     #' Data passing QC can also be plotted (default). Data are expected to be from a single cell line.
     #'  Undefined arguments will be passed to plot function.
-    #'  
+    #' 
+    #' @param times numeric of times when \emph{counts} were obtained
+    #' @param counts integer of cell (nuclei) counts
+    #' @param ids character of unique identifiers for each set of \emph{times} and \emph{counts}
+    #' @param col.names character of names sent as arguments to \code{filterCtrlData}; default is 
+    #'  \code{c('time','cell.counts','uid')}
+    #' @param plotIt logical for whether to plot data; default is \code{TRUE}
+    #' @param ctrl.type character of function to perform on control data; acceptable values include
+    #'  \emph{sum}, \emph{max}, and default is \code{mean}.
+    #' @param cell.line.name character of name of cell line from which control data were obtained;
+    #'  default is an empty character
+    #' @param ret.type character of type of values to return; default is \emph{counts}, which returns
+    #'  a \code{data.frame} of \emph{times}, \emph{counts}, and \emph{ids} for control data that passes QC; 
+    #'  if value is \emph{all}, returns \code{list} of \emph{control.counts}, a \code{data.frame}
+    #'  in same format as for \emph{counts}, \emph{control.type} a character of \emph{ctrl.type}
+    #'  argument, \emph{passed.qc} list of arguments passed to \code{findCtrlDIP}, \emph{dip}
+    #'  numeric of estimated proliferation rates, and \emph{model} \code{lm} model fit to data. 
+    #' 
     #' @return data.frame with a single set of time points and the estimated cell counts (if \code{ret.type} != 'all')
     #' @return list of integer \code{control.counts}, character \code{control.type}, logical \code{passed.qc},
     #'  numeric \code{dip rate}, linear model \code{model} (if \code{ret.type} == 'all') 
-    #'
+    #'  
+
     arglist <- list(...)
     if('min.ar2' %in% names(arglist))
     {
-     fd.args <- list(times,counts,ids,arglist[['min.ar2']])
-     names(fd.args) <- c('times','counts','ids','min.ar2')
-     arglist['min.ar2'] <- NULL
+        fd.args <- list(times,counts,ids,arglist[['min.ar2']])
+        names(fd.args) <- c('times','counts','ids','min.ar2')
+        arglist['min.ar2'] <- NULL
     } else {
-     fd.args <- list(times,counts,ids)
-     names(fd.args) <- c('times','counts','ids')
+        fd.args <- list(times,counts,ids)
+        names(fd.args) <- c('times','counts','ids')
     }
     fd <- do.call(filterCtrlData,fd.args)
 
@@ -246,6 +271,8 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
 
     ids.ok <-  names(rates[rates < mean(rates)+sd(rates) & rates > mean(rates)-sd(rates)])
     ids.ok <- gsub('times:ids','',ids.ok)
+    # need to replace first ID since used as comparator in lm fits
+    ids.ok <- sub('times',ids[1],ids.ok)
 
     times <- times[ids %in% ids.ok]
     counts <- counts[ids %in% ids.ok]
@@ -256,22 +283,23 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
 
     if(plotIt)
     {
-     plot.args <- append(list(fd[,1],fd[,2],fd[,3],fd[,3], cell.line.name),arglist)
-     names(plot.args)[1:5] <- c('x','y','uid','rep','main')
-     do.call(plotGC, plot.args)
+        plot.args <- append(list(fd[,1],fd[,2],fd[,3],fd[,3], cell.line.name),arglist)
+        names(plot.args)[1:5] <- c('time','cell.count','ids','rep','main')
+        do.call(plotGC, plot.args)
     }
     all.out <- findCtrlDIP(fd[,1],fd[,2],fd[,3], col.names=col.names, type=ctrl.type)
-    out <- all.out$data
-    if(plotIt) lines(out[,1],log2norm(out[,2],ids=1), lwd=3)
+    out <- fd
     if(ret.type=='all')
-     out <- list(
-      control.counts=out,
-      control.type=ctrl.type,
-      passed.qc=fd,
-      dip=all.out$dip,
-      model=all.out$model)
+    out <- list(
+        control.counts=out,
+        control.type=ctrl.type,
+        passed.qc=fd,
+        dip=all.out$dip,
+        model=all.out$model)
     invisible(out)
 }
+
+
 
 
 findMaxCounts <- function(times, counts, ids, min.ar2=0.99, verbose=TRUE)
