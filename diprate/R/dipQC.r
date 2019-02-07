@@ -372,12 +372,18 @@ prepDataCLD <- function(dat, drug, drug.col="drug1")
 }
 
 
-getGCargs <- function(dat, arg.name=c('time','cell.count','ids'),dat.col=c('time','cell.count','well'))
+getGCargs <- function(dat, arg.name=c('time','cell.count','ids'),dat.col=c('time','cell.count','uid'))
 {
     #' Get growth curve arguments
     #'
 	#' Converts data from \code{data.frame} into a \code{list} of arguments that can be
 	#'  passed to other functions.
+	#' @param dat data.frame containing colnames in \emph{dat.col}
+	#' @param arg.name character of names for output \code{list} of arguments; default is
+	#'  c('time','cell.count','ids')
+	#' @param dat.col character of colnames present in \emph{dat}; default is
+	#'  c('time','cell.count','uid')
+	#' @return list of arguments with names from \emph{arg.name}
 	# this is a temporary function that will require more work to ensure robustness
     out <- list()
     for(a in arg.name) out[[a]] <- dat[,dat.col[match(a,arg.name)]]
@@ -390,34 +396,98 @@ aboveMax <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, max.count=3000
     #' @param times numeric of times at which cell.count was obtained
     #' @param counts int of number of cells at each \emph{times}
     #' @param ids character of unique identifiers for \emph{times} and \emph{counts}
-    #' @param dat data.frame of \emph{times}, \emph{counts} and emph{ids} in first three columns
+    #' @param dat data.frame of \emph{times}, \emph{counts} and \emph{ids} in first three columns
     #' @param max.count maximum value of \emph{counts} over which the output value is \code{FALSE}
-    #' @return logical of length == \code{length(times)}
+    #' @return logical of length == \code{length(times)} whether \emph{counts} exceeds \emph{max.count}
     #' 
-    #' If emph{dat} is provided, all values provided for \emph{times}, \emph{counts} and emph{ids} will be overwritten!
+    #' NOTE: if \emph{dat} is provided, \emph{times}, \emph{counts} and emph{ids} will not be used
+    #' @examples
+    #' aboveMax( times=rep(c(1:5),2), counts=c((1:5)*1000,(1:5)*700), ids=c(rep('A',5),rep('B',5)) )
     #' 
     if(all(!exists(c('times','counts','ids','dat'))))
     {
-        message('removeHighCounts() needs some data')
+        message('aboveMax() needs some data')
         return(NA)
     }
     if(exists('dat') & class(dat)=='data.frame')
     {
         message('aboveMax(): Assuming first three columns in <dat> are: time, cell.count, and uid')
-        times <- dat[,1]
-        counts <- dat[,2]
-        ids <- dat[,3]
+        o <- order(dat[,3],dat[,1])
+        if(!all(o == seq(nrow(dat))))
+        {
+            message('dat must be ordered by ids and time')
+            return(NA)
+        } else {
+            times <- dat[,1]
+            counts <- dat[,2]
+            ids <- dat[,3]
+        }
     }
     out <- rep(FALSE,length(times))
     for(id in unique(ids))
     {
         # find time after which cell.count > max.count
         # if no cell.count > max.count keep all time points
-        max.time <- ifelse(
-            all(counts[ids == id] < max.count), 
-            max(times[ids == id]), 
-            min(times[ids == id & counts >= max.count]))
-        out[ids == id] <- times[ids == id] > max.time
+        if(all(counts[ids == id] < max.count)) next
+        max.time <- min(times[ids == id & counts >= max.count])
+        out[ids == id] <- times[ids == id] >= max.time
     }
     return(out)
+}
+
+
+okControls <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, minr2=0.95)
+{
+    #' Function to determine control data demonstrated exponential growth
+    #'  over entire duration, based on minimum R2 value of linear model fit
+    #' @param times numeric of times at which cell.count was obtained
+    #' @param counts integer of number of cells at each \emph{times}
+    #' @param ids character of unique identifiers for \emph{times} and \emph{counts}
+    #' @param dat data.frame of \emph{times}, \emph{counts} and \emph{ids} in first three columns
+    #' @param minr2 numeric of minimum value of R2 needed for all linear models of data
+    #'  must be above; default is 0.95
+    #' @return logical of whether all \code{lm} fits to data exceeds \emph{minr2}
+    #' 
+    #' NOTE: if \emph{dat} is provided, \emph{times}, \emph{counts} and emph{ids} will not be used
+    #' @examples
+    #' dat <- data.frame( times=1:5, counts=500*2^(1:5), ids=rep('A',5) )
+    #' okControls(  dat=dat )
+    #' dat <- data.frame( times=1:5, counts=c(500*2^(1:4), 5000), ids=rep('A',5) )
+    #' okControls(  dat=dat )
+    #' 
+    if(all(sapply(c('times','counts','ids','dat'),is.null)))
+    {
+        message('okControls() needs some data')
+        return(NA)
+    }
+    if(!is.null('dat'))
+    {
+        if(class(dat)!='data.frame' | suppressWarnings(ncol(dat) < 3))
+        {
+            message('dat arg to okControls needs a data.frame with at least 3 columns')
+            return(NA)
+        }
+        cn <- colnames(dat)
+        if(sum(length(grep('time',cn)),length(grep('count',cn)),length(grep('id',cn)))==3)
+        {
+            # matching colnames(dat) to expected names
+            cn[grep('id',cn)] <- 'ids'
+            cn[grep('time',cn)] <- 'times'
+            cn[grep('count',cn)] <- 'counts'
+            colnames(dat) <- cn
+        } else {
+            message('okControls(): Assuming first three columns in <dat> are: times, counts, and ids')
+            o <- order(dat[,3],dat[,1])
+            if(!all(o == seq(nrow(dat))))
+            {
+                message('dat must be ordered by ids and time')
+                return(NA)
+            }
+            colnames(dat) <- c('times','counts','ids')
+        }
+    } else {
+        dat <- data.frame(times=times,counts=counts,ids=ids)
+    }
+    m <- lme4::lmList(log2(counts) ~ times | ids, data=dat)
+    all(unlist(summary(m)$adj.r.squared) >= minr2)
 }

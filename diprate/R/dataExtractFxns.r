@@ -2,8 +2,8 @@ getMapInfo <- function(mapName)
 {
     #' Load plate map file
     #' Function to load plate map file in either \emph{csv} or Microsoft Excel formats
-    #' (\emph{.xls} or \emph{.xlsx}).
-    #' \emph{deprecated——will be removed}
+    #'  including xls and xlsx formats.
+    #' NOTE THAT THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED
     #'
     #' @param mapName \emph{path} to plate map file
     #'

@@ -4,8 +4,8 @@
 \alias{getMapInfo}
 \title{Load plate map file
 Function to load plate map file in either \emph{csv} or Microsoft Excel formats
-(\emph{.xls} or \emph{.xlsx}).
-\emph{deprecated——will be removed}}
+ including xls and xlsx formats.
+NOTE THAT THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED}
 \usage{
 getMapInfo(mapName)
 }
@@ -18,6 +18,6 @@ data.frame of plate map information
 \description{
 Load plate map file
 Function to load plate map file in either \emph{csv} or Microsoft Excel formats
-(\emph{.xls} or \emph{.xlsx}).
-\emph{deprecated——will be removed}
+ including xls and xlsx formats.
+NOTE THAT THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED
 }

@@ -58,8 +58,7 @@ utMA <- function(values,times,tau=24)
 
 .trapezoid <- function(x1, x2, x3, y1, y3) 
 {
-    #' Function to calculate area of a trapezoid
-    #' 
+    # Function to calculate area of a trapezoid
     if (x2 == x3 | x2 < x1)
     {
         return((x3 - x2) * y1)

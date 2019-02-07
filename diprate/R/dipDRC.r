@@ -56,10 +56,7 @@ rmsd <- function(resid)
 
 .makeUCond <- function(dat,var)
 {
-    #' Make unique condition
-    #'
-    #' Function to make unique conditions by pasting variables
-    #'
+    # Function to make unique conditions by pasting variables
     if(class(dat) != 'data.frame' & class(var) != 'character')
     {
         message('data or variables sent to makeUCond invalid')
@@ -193,7 +190,7 @@ findDIP <- function(dtf,name='unknown',all.models=FALSE, metric=c('opt','ar2','r
 }
 
 
-dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.date'),
+dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','drug1','drug1.conc','expt.id'),
     print.dip=FALSE, norm=FALSE, plotIt=TRUE, toFile=FALSE, fct=LL.4(), uidName='uid', ...)
 {
     #' dipDRC: main function for finding DIP rates from structured data.frame
@@ -201,6 +198,21 @@ dipDRC <- function(dtf, xName='time', yName='cell.count', var=c('cell.line','dru
     #' Function uses data.frame of cell counts over time and associates other variables with
     #'  resultant DIP rate estimates.
     #'
+    #' @param dtf data.frame of data to fit with \code{drm}
+    #' @param xName character of dependent variable name (x-axis); default is \emph{time}
+    #' @param yName character of independent variable name (y-axis); default is \emph{cell.count}
+    #' @param var character vector of column names used to identify different conditions;
+    #'  default is \emph{c('cell.line','drug1','drug1.conc','expt.id')}
+    #' @param print.dip logical whether to print DIP rate value; default is \emph{FALSE}
+    #' @param norm logical whether to normalize DIP rate values to mean of control values; 
+    #'  default is \emph{FALSE}
+    #' @param plotIt logical whether to produce plot of dose-response curve; default is
+    #'  \emph{TRUE}
+    #' @param toFile logical whether to send graphic output to file; default is \emph{FALSE}
+    #' @param fct function to use in dose-response model; default is \code{drc::LL.4()}
+    #' @param uidname character defining column name to use as unique ID; default is \emph{uid}
+    #' @return drm object of class \emph{drc} (drc model fit to data)
+    #' 
     # Function to extract DIP rate from single cell line and single drug + control
     # and calculates a 4-param log-logistic fit by default
     if(plotIt & toFile)    pdf('dipDRC_graph.pdf')

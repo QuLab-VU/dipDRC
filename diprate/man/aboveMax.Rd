@@ -14,15 +14,19 @@ aboveMax(times = NULL, counts = NULL, ids = NULL, dat = NULL,
 
 \item{ids}{character of unique identifiers for \emph{times} and \emph{counts}}
 
-\item{dat}{data.frame of \emph{times}, \emph{counts} and emph{ids} in first three columns}
+\item{dat}{data.frame of \emph{times}, \emph{counts} and \emph{ids} in first three columns}
 
 \item{max.count}{maximum value of \emph{counts} over which the output value is \code{FALSE}}
 }
 \value{
-logical of length == \code{length(times)}
+logical of length == \code{length(times)} whether \emph{counts} exceeds \emph{max.count}
 
-If emph{dat} is provided, all values provided for \emph{times}, \emph{counts} and emph{ids} will be overwritten!
+NOTE: if \emph{dat} is provided, \emph{times}, \emph{counts} and emph{ids} will not be used
 }
 \description{
 Function to identify vector positions where cell.count > max.count
+}
+\examples{
+aboveMax( times=rep(c(1:5),2), counts=c((1:5)*1000,(1:5)*700), ids=c(rep('A',5),rep('B',5)) )
+
 }
