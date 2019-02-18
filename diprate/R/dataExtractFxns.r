@@ -475,3 +475,71 @@ getSegDirPaths <- function(top_dir_path='.')
         return(segdirs) 
     }
 }
+
+parseIncucyteName <- function(fn)
+{
+    #' Extract information from Incucyte image file names
+    #' @param fn \code{character} of file name
+    #' @return \code{data.frame} of \emph{file_name}, \emph{expt_id} (experiment ID), 
+    #'  \emph{well}, \emph{image_pos} (image position in well), \emph{image_time}
+    #'  (time image was acquired).
+    
+    if(!is.character(fn)) stop('parseIncucyteName expects character vectors as input')
+    ss <- strsplit(fn,'.',fixed=TRUE)
+    file_type <- sapply(ss, function(x) x[2])
+    ss2 <- sapply(ss, function(x) strsplit(x[1],'_'))
+    expt_id <- sapply(ss2, function(x) x[1])
+    well <- sapply(ss2, function(x) x[2])
+    img_pos <- sapply(ss2, function(x) x[3])
+    img_time <- sapply(ss2, function(x) 
+        as.character(strptime(paste(x[4:5],collapse=''), format='%Yy%mm%dd%Hh%Mm')))
+    
+    data.frame( file_name=fn,
+                expt_id=expt_id,
+                well=well,
+                image_pos=img_pos,
+                image_time=as.character(img_time))
+}
+
+makeIncTaskArgs <- function(datadirs, verbose=TRUE)
+{
+    #' Make Celery/RabbitMQ task arguments for py-seg image processing of Incucyte image files
+    #' @param fn \code{character} of file name
+    #' @return \code{data.frame} of \emph{file_name}, \emph{expt_id} (experiment ID), 
+    #'  \emph{well}, \emph{image_pos} (image position in well), \emph{image_time}
+    #'  (time image was acquired).
+    #' 
+    #' This function currently does not take other arguments to generate task arguments
+    #'  such as 
+    
+    
+    do.call(rbind, lapply(datadirs, function(mydir)
+    {
+        #file_list is the list of file names in each experiment directory
+        file_list <- list.files(mydir)
+
+        # remove non-image file names
+        im_file_list <- unlist(lapply(file_list, function(x) 
+        {
+            out <- x[!grepl("1280x1280",x)]
+            ftype <- tolower(sapply(out, function(z) strsplit(z,'.',fixed=TRUE)[[1]][2]))
+            # keep only jpg and tiff files
+            out[ftype %in% c('jpg','tiff','png')]
+        }))
+
+        im_file_df <- parseIncucyteName(im_file_list)
+        full_path <- normalizePath(file.path(mydir,im_file_df$file_name))
+        if(verbose) message(paste('found',length(full_path),'image files total in',mydir))
+        # assuming only single channel!!
+        if(verbose) message(paste(length(full_path),'nuclear images files found in',mydir))
+        data.frame( ch2_im_path="None", 
+                    nuc_im_path=full_path, 
+                    overwrite='TRUE', 
+                    plate_id=0,
+                    regprops='FALSE',
+                    save_path=file.path(dirname(dirname(full_path)),
+                        paste(basename(dirname(full_path)),'Segmentation',sep='_')),
+                    well=im_file_df$well
+                    )
+    }))
+}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pysegQC.r
 \name{makeMissingTaskArgs}
 \alias{makeMissingTaskArgs}
-\title{Generate /@task arguments for missing data}
+\title{Generate @task arguments for missing data}
 \usage{
 makeMissingTaskArgs(misdat, fi, defargs = list(),
   root_dir = "/mnt/quaranta/VDIPRR/HTS006")

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pysegQC.r
 \name{makeTaskArgs}
 \alias{makeTaskArgs}
-\title{Make /@task arguments for image processing with py-seg}
+\title{Make task arguments for image processing with py-seg}
 \usage{
 makeTaskArgs(fi, root_dir, defargs = list(), ...)
 }
@@ -17,5 +17,5 @@ makeTaskArgs(fi, root_dir, defargs = list(), ...)
 data.frame of py-seg \@task arguments
 }
 \description{
-Make /@task arguments for image processing with py-seg
+Make task arguments for image processing with py-seg
 }

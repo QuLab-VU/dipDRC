@@ -113,7 +113,7 @@ findMissing <- function(fi,datapath="",verbose=FALSE)
 
 makeMissingTaskArgs <- function(misdat,fi,defargs=list(),root_dir='/mnt/quaranta/VDIPRR/HTS006')
 {
-    #' Generate /@task arguments for missing data
+    #' Generate @task arguments for missing data
     #'
     #' If value exists in \emph{defargs}, use to replace values below
     #' @param misdat data.frame of missing data (image file names and associated annotation)
@@ -167,7 +167,7 @@ makeMissingTaskArgs <- function(misdat,fi,defargs=list(),root_dir='/mnt/quaranta
 
 makeTaskArgs <- function(fi,root_dir,defargs=list(),...)
 {
-    #' Make /@task arguments for image processing with py-seg
+    #' Make task arguments for image processing with py-seg
     #'
     #' @param fi data.frame of file information
     #' @param defargs list of default arguments to include
