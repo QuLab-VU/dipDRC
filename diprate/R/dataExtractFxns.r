@@ -446,7 +446,8 @@ makeCVTaskArgs <- function(datadirs, count_chan=TRUE, verbose=TRUE, nuc_index = 
                     plate_id=basename(dirname(nuc_im_path)),
                     regprops='TRUE',
                     save_path=file.path(dirname(dirname(nuc_im_path)),'Segmentation'),
-                    well=well
+                    well=well,
+                    stringsAsFactors=FALSE
                     )
     }))
 }
@@ -498,7 +499,8 @@ parseIncucyteName <- function(fn)
                 expt_id=expt_id,
                 well=well,
                 image_pos=img_pos,
-                image_time=as.character(img_time))
+                image_time=as.character(img_time),
+                stringsAsFactors = FALSE)
 }
 
 makeIncTaskArgs <- function(datadirs, verbose=TRUE)
@@ -539,7 +541,8 @@ makeIncTaskArgs <- function(datadirs, verbose=TRUE)
                     regprops='FALSE',
                     save_path=file.path(dirname(dirname(full_path)),
                         paste(basename(dirname(full_path)),'Segmentation',sep='_')),
-                    well=im_file_df$well
+                    well=im_file_df$well,
+                    stringsAsFactors=FALSE
                     )
     }))
 }
