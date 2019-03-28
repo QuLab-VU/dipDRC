@@ -352,12 +352,18 @@ parseCVFileName <- function(fn)
 {
     #' Parse Cellavista image file names
     #' @param fn character vector of file names
+    #' 
+    #' Expects a character string in the form of \code{20160615155826-311-R09-C20.jpg}
+    #'  where \code{20160615155826} is the date and time, \code{311} is the image ID,
+    #'  \code{R09} is the row location, \code{C20} is the column location, and \code{jpg}
+    #'  is the file type.
     #' @export
     sapply(fn, function(x)
     {
         ftype <- strsplit(x,'.',fixed=TRUE)[[1]][2]
         o <- strsplit(x,'.',fixed=TRUE)[[1]][1]
         o <- strsplit(o,'-')[[1]]
+        
         tim <- strptime(o[[1]],format="%Y%m%d%H%M%S")
         fnum <- o[[2]]
         row <- LETTERS[as.integer(gsub('R','',o[[3]]))]
