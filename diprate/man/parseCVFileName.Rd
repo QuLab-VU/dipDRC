@@ -7,7 +7,12 @@
 parseCVFileName(fn)
 }
 \arguments{
-\item{fn}{character vector of file names}
+\item{fn}{character vector of file names
+
+Expects a character string in the form of \code{20160615155826-311-R09-C20.jpg}
+ where \code{20160615155826} is the date and time, \code{311} is the image ID,
+ \code{R09} is the row location, \code{C20} is the column location, and \code{jpg}
+ is the file type.}
 }
 \description{
 Parse Cellavista image file names

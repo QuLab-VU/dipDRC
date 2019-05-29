@@ -1,29 +1,3 @@
-getMapInfo <- function(mapName)
-{
-    #' Load plate map file
-    #' Function to load plate map file in either \emph{csv} or Microsoft Excel formats
-    #'  including xls and xlsx formats.
-    #' NOTE THAT THIS FUNCTION IS DEPRECATED AND WILL BE REMOVED
-    #'
-    #' @param mapName \emph{path} to plate map file
-    #'
-    #' @return data.frame of plate map information
-    ifelse(grepl('.xl',mapName),
-        {
-            mapColNames <- as.character(gdata::read.xls(mapName, nrow=1, header=FALSE, as.is=TRUE))
-        },
-        mapColNames <- as.character(read.csv(mapName, nrow=1, header=FALSE, as.is=TRUE)))
-
-    mapColNames <- gsub('\xb5','micro',mapColNames)
-    mapColNames <- gsub('TR:', "", mapColNames)
-
-    ifelse(grepl('.xl',mapName),
-        map <- gdata::read.xls(mapName, head=FALSE, skip=1, as.is=TRUE),
-        map <- read.csv(mapName, head=FALSE, skip=1, as.is=TRUE))
-    colnames(map) <- mapColNames
-    map
-}
-
 addMapInfo     <- function(dfa,path.to.map)
 {
     #' Add plate map annotations to data.frame
@@ -36,7 +10,8 @@ addMapInfo     <- function(dfa,path.to.map)
     #' map file should be csv file:
     #' expecting  colnames c('date' or 'expt.date', 'well', 'cell.line', 'drug1', 'drug1.conc', 'drug1.units')
     #' @return data.frame with added columns matching column names in map file.
-    map <- getMapInfo(path.to.map)
+    delim <- ifelse(substr(path.to.map,nchar(path.to.map)-2,nchar(path.to.map))=='csv',',','\t')
+    map <- read.csv(path.to.map,sep=delim)
     cn <- colnames(map)
 
     # find/make expt.date as long as a colname for 'date' does not already exists in dfa
