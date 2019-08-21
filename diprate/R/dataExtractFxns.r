@@ -10,8 +10,8 @@ addMapInfo     <- function(dfa,path.to.map)
     #' map file should be csv file:
     #' expecting  colnames c('date' or 'expt.date', 'well', 'cell.line', 'drug1', 'drug1.conc', 'drug1.units')
     #' @return data.frame with added columns matching column names in map file.
-    delim <- ifelse(substr(path.to.map,nchar(path.to.map)-2,nchar(path.to.map))=='csv',',','\t')
-    map <- read.csv(path.to.map,sep=delim)
+    delim <- ifelse(grepl("\\.[Cc][Ss][Vv]",path.to.map)[1],',','\t')
+    map <- read.csv(path.to.map, sep=delim, as.is=TRUE)
     cn <- colnames(map)
 
     # find/make expt.date as long as a colname for 'date' does not already exists in dfa
