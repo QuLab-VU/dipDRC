@@ -4,8 +4,15 @@
 \alias{prepPysegArgs}
 \title{Generic function to prepare data.frame of py-seg arguments}
 \usage{
-prepPysegArgs(finfo, rootdir, expdir = "", ch2_name = "FITC",
-  savefi = FALSE, momlogpath = "", ...)
+prepPysegArgs(
+  finfo,
+  rootdir,
+  expdir = "",
+  ch2_name = "FITC",
+  savefi = FALSE,
+  momlogpath = "",
+  ...
+)
 }
 \description{
 Generic function to prepare data.frame of py-seg arguments

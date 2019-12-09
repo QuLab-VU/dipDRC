@@ -493,7 +493,8 @@ makeIncTaskArgs <- function(datadirs, verbose=TRUE)
     #'  (time image was acquired).
     #' 
     #' This function currently does not take other arguments to generate task arguments
-    #'  such as 
+    #' 
+    #' Only image types containing extensions of jpg, jpeg, tif, tiff or png are detected
     
     
     do.call(rbind, lapply(datadirs, function(mydir)
@@ -506,8 +507,8 @@ makeIncTaskArgs <- function(datadirs, verbose=TRUE)
         {
             out <- x[!grepl("1280x1280",x)]
             ftype <- tolower(sapply(out, function(z) strsplit(z,'.',fixed=TRUE)[[1]][2]))
-            # keep only jpg and tiff files
-            out[ftype %in% c('jpg','tiff','png')]
+            # keep only jpeg, tiff or png files
+            out[ftype %in% c('jpg','jpeg','tif','tiff','png')]
         }))
 
         im_file_df <- parseIncucyteName(im_file_list)
@@ -527,3 +528,11 @@ makeIncTaskArgs <- function(datadirs, verbose=TRUE)
                     )
     }))
 }
+
+appendRowsNA <- function(dat,n=1)
+{
+    dnew <- data.frame(matrix(NA, nrow=n, ncol=ncol(dat)))
+    colnames(dnew) <- colnames(dat)
+    rbind(dat, dnew)
+}
+

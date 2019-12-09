@@ -184,10 +184,11 @@ plotCellLineDrug <- function(dat=ad, expt.date='20160513',
     invisible(out)
 }
 
-plotAllDrugs <- function(dat, drug.col='drug1', uid='well', output=FALSE, ...)
+plotAllDrugs <- function(dat, drug.col='drug1', uid='uid', output=FALSE, ...)
 {
     #' Plot all data by drug
-    # dat expected output from prepCountData
+    #' @param dat expected output from prepCountData
+    #' @param uid character of column name of unique identifier; default is \emph{uid}
     cl <- unique(dat$cell.line)
     if(length(cl)>1)
     {
@@ -223,18 +224,24 @@ plotFrac <- function(dat,frac.cn='ch2posfrac',...)
     do.call(plotGC, arglist)
 }
 
-plotAllCh2 <- function(datlist=pd, toFile=FALSE)
+plotAllCh2 <- function(datlist=pd, count_cn='cell.count', toFile=FALSE, fn=NULL, ...)
 {
     #' Plot all channel 2
+    #' This function will plot the time course of the fraction of channel 2-positive
+    #'  cells for each unique drug concentration (\emph{drug1.conc})
+    #' @param datlist list of data.frames of data separated by cell.line
+    #' @param count_cn character of the column name to use as total cell counts
+    #'  containing both ch2-positive and ch2-negative cells
     lapply(names(datlist), function(cl)
         {
-            prepMultiGCplot(toFile=toFile,fn=paste('Ch2PosPlots_',cl,'.pdf',sep=''))
-            drugs <- setdiff(unique(datlist[[cl]]$drug1),'control')
+            if(is.null(fn)) fn <- paste('Ch2PosPlots_',cl,'.pdf',sep='')
+            prepMultiGCplot(toFile=toFile,fn=fn)
+            drugs <- sort(setdiff(unique(datlist[[cl]]$drug1),'control'))
             lapply(drugs, function(dr)
             {
                 dat <- ssCLD(datlist[[cl]],cl=cl,drug=dr)
                 dat <- dat[order(dat$drug1.conc),]
-                if(is.null(dat$ch2posfrac)) dat$ch2posfrac <- dat$ch2.pos/dat$cell.count
+                if(is.null(dat$ch2posfrac)) dat$ch2posfrac <- dat$ch2.pos/dat[,count_cn]
                 ylim <- c(0,1)
                 main <- paste(cl,substr(dr,1,15),sep='+')
                 ylab <- expression(Fraction~of~Ch2^'+'~cells)
@@ -244,9 +251,9 @@ plotAllCh2 <- function(datlist=pd, toFile=FALSE)
                 return()
             })
             if(toFile) dev.off()
-            return()
         }
     )
+    invisible()
 }
 
 plotMultiGC <- function(dat, id='plate.name', uid='well', fnb='MultiGC_by_', toFile=FALSE, tit="", ...)

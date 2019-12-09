@@ -4,8 +4,13 @@
 \alias{makeCVTaskArgs}
 \title{Make Celery/RabbitMQ task arguments for py-seg image processing of Cellavista image files}
 \usage{
-makeCVTaskArgs(datadirs, count_chan = TRUE, verbose = TRUE,
-  nuc_index = 1, ch2_index = 0)
+makeCVTaskArgs(
+  datadirs,
+  count_chan = TRUE,
+  verbose = TRUE,
+  nuc_index = 1,
+  ch2_index = 0
+)
 }
 \arguments{
 \item{datadirs}{character vector of paths to directory(ies) containing Cellavista images}

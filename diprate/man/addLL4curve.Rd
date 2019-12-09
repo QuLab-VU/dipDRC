@@ -4,8 +4,7 @@
 \alias{addLL4curve}
 \title{Add 4-parameter log-logistic model curve}
 \usage{
-addLL4curve(drmodel, fromval = 1e-12, toval = 1e-05, norm = FALSE,
-  ...)
+addLL4curve(drmodel, fromval = 1e-12, toval = 1e-05, norm = FALSE, ...)
 }
 \arguments{
 \item{drmodel}{either \code{drc} or \code{numeric} of \code{drc} paramaters}

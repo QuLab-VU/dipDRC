@@ -4,8 +4,11 @@
 \alias{fixBadColnames}
 \title{Fix bad colnames}
 \usage{
-fixBadColnames(dat, cn = c("cell_count", "file_name", "plate_id",
-  "well"), overwrite = FALSE)
+fixBadColnames(
+  dat,
+  cn = c("cell_count", "file_name", "plate_id", "well"),
+  overwrite = FALSE
+)
 }
 \description{
 Fix bad colnames

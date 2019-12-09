@@ -4,9 +4,15 @@
 \alias{plotCellLineDrug}
 \title{Plot cell count data by cell line and drug}
 \usage{
-plotCellLineDrug(dat = ad, expt.date = "20160513", toFile = FALSE,
-  max.count = NA, max.count.type = "by.cell.line", plotFit = FALSE,
-  verbose = FALSE)
+plotCellLineDrug(
+  dat = ad,
+  expt.date = "20160513",
+  toFile = FALSE,
+  max.count = NA,
+  max.count.type = "by.cell.line",
+  plotFit = FALSE,
+  verbose = FALSE
+)
 }
 \description{
 deprecated - will be removed

@@ -4,9 +4,17 @@
 \alias{controlQC}
 \title{Quality control of control wells}
 \usage{
-controlQC(times, counts, ids, col.names = c("time", "cell.counts",
-  "uid"), plotIt = TRUE, ctrl.type = "mean", cell.line.name = "",
-  ret.type = "counts", ...)
+controlQC(
+  times,
+  counts,
+  ids,
+  col.names = c("time", "cell.counts", "uid"),
+  plotIt = TRUE,
+  ctrl.type = "mean",
+  cell.line.name = "",
+  ret.type = "counts",
+  ...
+)
 }
 \arguments{
 \item{times}{numeric of times when \emph{counts} were obtained}

@@ -4,8 +4,14 @@
 \alias{filterCtrlData}
 \title{Filter control data}
 \usage{
-filterCtrlData(times = NULL, counts = NULL, ids = NULL, dat = NULL,
-  min.ar2 = 0.99, verbose = FALSE)
+filterCtrlData(
+  times = NULL,
+  counts = NULL,
+  ids = NULL,
+  dat = NULL,
+  min.ar2 = 0.99,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{times}{vector of times}

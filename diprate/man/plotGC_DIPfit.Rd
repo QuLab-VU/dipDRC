@@ -4,8 +4,14 @@
 \alias{plotGC_DIPfit}
 \title{Plot growth curve with DIP rate estimate}
 \usage{
-plotGC_DIPfit(dtp, tit = "unknown", toFile = FALSE, newDev = TRUE,
-  add.line.met = "none", ...)
+plotGC_DIPfit(
+  dtp,
+  tit = "unknown",
+  toFile = FALSE,
+  newDev = TRUE,
+  add.line.met = "none",
+  ...
+)
 }
 \arguments{
 \item{dtp}{data.frame of data to plot}

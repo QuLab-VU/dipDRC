@@ -4,8 +4,7 @@
 \alias{plotCtrlGC}
 \title{Plot control growth curves}
 \usage{
-plotCtrlGC(dat = d, type = c("raw", "lin")[1], uniq = "plate.name",
-  ...)
+plotCtrlGC(dat = d, type = c("raw", "lin")[1], uniq = "plate.name", ...)
 }
 \arguments{
 \item{dat}{data.frame of data to plot}

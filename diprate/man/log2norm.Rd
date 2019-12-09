@@ -4,8 +4,15 @@
 \alias{log2norm}
 \title{log2 values normalized to some reference}
 \usage{
-log2norm(count, ids, norm_type = c("idx", "ref")[1], norm_id = "0",
-  norm_vals, norm_idx = 1, zero = log2(0.999))
+log2norm(
+  count,
+  ids,
+  norm_type = c("idx", "ref")[1],
+  norm_id = "0",
+  norm_vals,
+  norm_idx = 1,
+  zero = log2(0.999)
+)
 }
 \arguments{
 \item{count}{\emph{numeric} or \emph{integer}}

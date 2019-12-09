@@ -4,8 +4,12 @@
 \alias{plotAllDrugs}
 \title{Plot all data by drug}
 \usage{
-plotAllDrugs(dat, drug.col = "drug1", uid = "well", output = FALSE,
-  ...)
+plotAllDrugs(dat, drug.col = "drug1", uid = "uid", output = FALSE, ...)
+}
+\arguments{
+\item{dat}{expected output from prepCountData}
+
+\item{uid}{character of column name of unique identifier; default is \emph{uid}}
 }
 \description{
 Plot all data by drug

@@ -4,10 +4,19 @@
 \alias{dipDRC}
 \title{dipDRC: main function for finding DIP rates from structured data.frame}
 \usage{
-dipDRC(dtf, xName = "time", yName = "cell.count",
+dipDRC(
+  dtf,
+  xName = "time",
+  yName = "cell.count",
   var = c("cell.line", "drug1", "drug1.conc", "expt.id"),
-  print.dip = FALSE, norm = FALSE, plotIt = TRUE, toFile = FALSE,
-  fct = LL.4(), uidName = "uid", ...)
+  print.dip = FALSE,
+  norm = FALSE,
+  plotIt = TRUE,
+  toFile = FALSE,
+  fct = LL.4(),
+  uidName = "uid",
+  ...
+)
 }
 \arguments{
 \item{dtf}{data.frame of data to fit with \code{drm}}

@@ -4,8 +4,13 @@
 \alias{getAA}
 \title{Calculate activity area of dose-response model (drm object)}
 \usage{
-getAA(p, drugconcrange = c(1e-12, 1e-05), minval = -1, norm = TRUE,
-  removeNE = FALSE)
+getAA(
+  p,
+  drugconcrange = c(1e-12, 1e-05),
+  minval = -1,
+  norm = TRUE,
+  removeNE = FALSE
+)
 }
 \arguments{
 \item{p}{dose-response model object \code{drm} from the \code{drc} package}

@@ -4,8 +4,7 @@
 \alias{assemPlateData}
 \title{Assemble plate data}
 \usage{
-assemPlateData(segdirpath, count_re = "cellcount", pids = "",
-  toFile = FALSE)
+assemPlateData(segdirpath, count_re = "cellcount", pids = "", toFile = FALSE)
 }
 \arguments{
 \item{segdirpath}{character of path to directory containing segmentation output}

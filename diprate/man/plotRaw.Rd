@@ -4,8 +4,7 @@
 \alias{plotRaw}
 \title{Plot raw cell count data}
 \usage{
-plotRaw(dat = ad, id.name = "cell.line", toFile = FALSE,
-  fn = "RawGC", ...)
+plotRaw(dat = ad, id.name = "cell.line", toFile = FALSE, fn = "RawGC", ...)
 }
 \description{
 Plot raw cell count data

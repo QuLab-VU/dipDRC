@@ -4,8 +4,16 @@
 \alias{plotGC}
 \title{Plot growth curve}
 \usage{
-plotGC(time, cell.count, ids, rep = ids, count.type = "linear",
-  color = TRUE, leg = TRUE, ...)
+plotGC(
+  time,
+  cell.count,
+  ids,
+  rep = ids,
+  count.type = "linear",
+  color = TRUE,
+  leg = TRUE,
+  ...
+)
 }
 \arguments{
 \item{time}{numeric vector of times}

@@ -4,8 +4,12 @@
 \alias{makeMissingTaskArgs}
 \title{Generate @task arguments for missing data}
 \usage{
-makeMissingTaskArgs(misdat, fi, defargs = list(),
-  root_dir = "/mnt/quaranta/VDIPRR/HTS006")
+makeMissingTaskArgs(
+  misdat,
+  fi,
+  defargs = list(),
+  root_dir = "/mnt/quaranta/VDIPRR/HTS006"
+)
 }
 \arguments{
 \item{misdat}{data.frame of missing data (image file names and associated annotation)}

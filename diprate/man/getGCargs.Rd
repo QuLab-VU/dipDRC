@@ -4,8 +4,11 @@
 \alias{getGCargs}
 \title{Get growth curve arguments}
 \usage{
-getGCargs(dat, arg.name = c("time", "cell.count", "ids"),
-  dat.col = c("time", "cell.count", "uid"))
+getGCargs(
+  dat,
+  arg.name = c("time", "cell.count", "ids"),
+  dat.col = c("time", "cell.count", "uid")
+)
 }
 \arguments{
 \item{dat}{data.frame containing colnames in \emph{dat.col}}

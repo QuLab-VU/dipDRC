@@ -2,10 +2,26 @@
 % Please edit documentation in R/plotGC.r
 \name{plotAllCh2}
 \alias{plotAllCh2}
-\title{Plot all channel 2}
+\title{Plot all channel 2
+This function will plot the time course of the fraction of channel 2-positive
+ cells for each unique drug concentration (\emph{drug1.conc})}
 \usage{
-plotAllCh2(datlist = pd, toFile = FALSE)
+plotAllCh2(
+  datlist = pd,
+  count_cn = "cell.count",
+  toFile = FALSE,
+  fn = NULL,
+  ...
+)
+}
+\arguments{
+\item{datlist}{list of data.frames of data separated by cell.line}
+
+\item{count_cn}{character of the column name to use as total cell counts
+containing both ch2-positive and ch2-negative cells}
 }
 \description{
 Plot all channel 2
+This function will plot the time course of the fraction of channel 2-positive
+ cells for each unique drug concentration (\emph{drug1.conc})
 }

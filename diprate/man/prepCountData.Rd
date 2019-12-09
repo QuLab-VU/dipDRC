@@ -4,9 +4,14 @@
 \alias{prepCountData}
 \title{Prepare cell count data by quality-contrl filtering control wells}
 \usage{
-prepCountData(dat, time.count.id.names = c("time", "cell.count", "well"),
-  max.cell.count = 3000, cell.line.name = unique(dat$cell.line),
-  ctrl.type = "mean", ...)
+prepCountData(
+  dat,
+  time.count.id.names = c("time", "cell.count", "well"),
+  max.cell.count = 3000,
+  cell.line.name = unique(dat$cell.line),
+  ctrl.type = "mean",
+  ...
+)
 }
 \arguments{
 \item{dat}{data.frame of data to be prepared}

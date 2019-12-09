@@ -4,8 +4,7 @@
 \alias{assembleDIP}
 \title{Function to extract DIP rates from findDIP object (list)}
 \usage{
-assembleDIP(fdo, od, var = c("cell.line", "drug1", "drug1.conc"),
-  name = "uid")
+assembleDIP(fdo, od, var = c("cell.line", "drug1", "drug1.conc"), name = "uid")
 }
 \arguments{
 \item{fdo}{list of findDIP objects (list)}

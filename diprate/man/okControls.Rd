@@ -5,8 +5,7 @@
 \title{Function to determine control data demonstrated exponential growth
  over entire duration, based on minimum R2 value of linear model fit}
 \usage{
-okControls(times = NULL, counts = NULL, ids = NULL, dat = NULL,
-  minr2 = 0.95)
+okControls(times = NULL, counts = NULL, ids = NULL, dat = NULL, minr2 = 0.95)
 }
 \arguments{
 \item{times}{numeric of times at which cell.count was obtained}

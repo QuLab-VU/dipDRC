@@ -15,7 +15,8 @@ makeIncTaskArgs(datadirs, verbose = TRUE)
  (time image was acquired).
 
 This function currently does not take other arguments to generate task arguments
- such as
+
+Only image types containing extensions of jpg, jpeg, tif, tiff or png are detected
 }
 \description{
 Make Celery/RabbitMQ task arguments for py-seg image processing of Incucyte image files

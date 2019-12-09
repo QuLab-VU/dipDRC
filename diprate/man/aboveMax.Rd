@@ -4,8 +4,7 @@
 \alias{aboveMax}
 \title{Function to identify vector positions where cell.count > max.count}
 \usage{
-aboveMax(times = NULL, counts = NULL, ids = NULL, dat = NULL,
-  max.count = 3000)
+aboveMax(times = NULL, counts = NULL, ids = NULL, dat = NULL, max.count = 3000)
 }
 \arguments{
 \item{times}{numeric of times at which cell.count was obtained}
