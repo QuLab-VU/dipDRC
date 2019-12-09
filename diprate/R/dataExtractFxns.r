@@ -507,7 +507,7 @@ makeIncTaskArgs <- function(datadirs, verbose=TRUE)
             out <- x[!grepl("1280x1280",x)]
             ftype <- tolower(sapply(out, function(z) strsplit(z,'.',fixed=TRUE)[[1]][2]))
             # keep only jpg and tiff files
-            out[ftype %in% c('jpg','tif','png')]
+            out[ftype %in% c('jpg','tiff','png')]
         }))
 
         im_file_df <- parseIncucyteName(im_file_list)
