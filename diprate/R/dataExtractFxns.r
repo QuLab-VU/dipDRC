@@ -239,8 +239,8 @@ parseMBK <- function(mbk_file_path)
     fn <- mbk_file_path
 
     # first four lines are header in different format
-    h <- readLines(fn,4,warn=FALSE)
-    m <- read.csv(fn,sep='\t',skip=4,header=FALSE, as.is=TRUE)
+    h <- readLines(fn, 4, warn=FALSE, skipNul=TRUE)
+    m <- read.csv(fn, sep='\t', skip=4, header=FALSE, skipNul=TRUE, as.is=TRUE)
 
     # column names must be parsed from row 3 of header
     cn <- unlist(strsplit(h[3],','))
