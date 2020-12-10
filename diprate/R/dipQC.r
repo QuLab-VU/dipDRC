@@ -38,17 +38,17 @@ filterCtrlData <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, min.ar2=
     #' @param times vector of times
     #' @param counts vector of cell counts
     #' @param ids vector of unique identifiers used to separate groups (usually a well from an experiment)
-    #' @param dat data.frame of times, cell counts and unique identifiers in columns 1:3 
+    #' @param dat data.frame of times, cell counts and unique identifiers in columns 1:3
     #' @param min.ar2 numeric of minimum value for adjusted R-squared value of linear model fit
     #' @param verbose logical whether to show progress
     #'
     #' @return data.frame of times, counts, and ids for control data passing filter (i.e.,
     #'  linear (in log scale) with adj R-squared value less than \code{min.ar2})
-    #' 
+    #'
     #' Input parameters can be either \code{times}, \code{counts}, and \code{ids}, or a \emph{data.frame}
     #'  of these in the first three columns
-    #'  
-    
+    #'
+
     dip   <- numeric()
     dtk.times <- integer()
     dtk.counts <- integer()
@@ -203,7 +203,7 @@ timeAtTH <- function(times,counts,threshold=1000)
     #' @param counts integer of number of objects (nuclei) at each measurement time
     #' @param threshold integer of threshold value of \emph{counts}; default = 1000
     #' @return numeric of first value of \emph{times} when \emph{counts} exceeds \emph{threshold}
-    
+
     # ensure ordered by time
     counts <- counts[order(times)]
     times <- times[order(times)]
@@ -214,19 +214,19 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
     plotIt=TRUE, ctrl.type='mean', cell.line.name="", ret.type='counts', ...)
 {
     #' Quality control of control wells
-    #' 
+    #'
     #' Function to identify \emph{ids} for which \emph{counts} are exponential over range of \emph{times}.
     #'  Wrapper for \code{filterCtrlData} and \code{findCtrlDIP} functions and other filtering.
     #' First, data are passed to \code{filterCtrlData} which finds linear model fits to data for each
-    #'  unique \emph{ids} with at least 5 data points and with minimum adjusted R-squared value 
+    #'  unique \emph{ids} with at least 5 data points and with minimum adjusted R-squared value
     #'  greater than 0.99 (default) or the value of the argument \emph{min.ar2}.
     #' Data passing QC can also be plotted (default). Data are expected to be from a single cell line.
     #'  Undefined arguments will be passed to plot function.
-    #' 
+    #'
     #' @param times numeric of times when \emph{counts} were obtained
     #' @param counts integer of cell (nuclei) counts
     #' @param ids character of unique identifiers for each set of \emph{times} and \emph{counts}
-    #' @param col.names character of names sent as arguments to \code{filterCtrlData}; default is 
+    #' @param col.names character of names sent as arguments to \code{filterCtrlData}; default is
     #'  \code{c('time','cell.counts','uid')}
     #' @param plotIt logical for whether to plot data; default is \code{TRUE}
     #' @param ctrl.type character of function to perform on control data; acceptable values include
@@ -234,16 +234,16 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
     #' @param cell.line.name character of name of cell line from which control data were obtained;
     #'  default is an empty character
     #' @param ret.type character of type of values to return; default is \emph{counts}, which returns
-    #'  a \code{data.frame} of \emph{times}, \emph{counts}, and \emph{ids} for control data that passes QC; 
+    #'  a \code{data.frame} of \emph{times}, \emph{counts}, and \emph{ids} for control data that passes QC;
     #'  if value is \emph{all}, returns \code{list} of \emph{control.counts}, a \code{data.frame}
     #'  in same format as for \emph{counts}, \emph{control.type} a character of \emph{ctrl.type}
     #'  argument, \emph{passed.qc} list of arguments passed to \code{findCtrlDIP}, \emph{dip}
-    #'  numeric of estimated proliferation rates, and \emph{model} \code{lm} model fit to data. 
-    #' 
+    #'  numeric of estimated proliferation rates, and \emph{model} \code{lm} model fit to data.
+    #'
     #' @return data.frame with a single set of time points and the estimated cell counts (if \code{ret.type} != 'all')
     #' @return list of integer \code{control.counts}, character \code{control.type}, logical \code{passed.qc},
-    #'  numeric \code{dip rate}, linear model \code{model} (if \code{ret.type} == 'all') 
-    #'  
+    #'  numeric \code{dip rate}, linear model \code{model} (if \code{ret.type} == 'all')
+    #'
 
     arglist <- list(...)
     if('min.ar2' %in% names(arglist))
@@ -259,7 +259,7 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
 
     times <- fd$times
     counts <- fd$counts
-    ids <- as.character(fd$ids)
+    ids <- all.ids <- as.character(fd$ids)
 
     # remove outlier ids ( > 1 sd from the mean)
     #
@@ -293,7 +293,7 @@ controlQC <- function(times, counts, ids, col.names=c('time','cell.counts','uid'
     out <- list(
         control.counts=out,
         control.type=ctrl.type,
-        passed.qc=fd,
+        passed.qc=sapply(unique(all.ids), function(x) x %in% ids.ok),
         dip=all.out$dip,
         model=all.out$model)
     invisible(out)
@@ -399,11 +399,11 @@ aboveMax <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, max.count=3000
     #' @param dat data.frame of \emph{times}, \emph{counts} and \emph{ids} in first three columns
     #' @param max.count maximum value of \emph{counts} over which the output value is \code{FALSE}
     #' @return logical of length == \code{length(times)} whether \emph{counts} exceeds \emph{max.count}
-    #' 
+    #'
     #' NOTE: if \emph{dat} is provided, \emph{times}, \emph{counts} and emph{ids} will not be used
     #' @examples
     #' aboveMax( times=rep(c(1:5),2), counts=c((1:5)*1000,(1:5)*700), ids=c(rep('A',5),rep('B',5)) )
-    #' 
+    #'
     if(all(!exists(c('times','counts','ids','dat'))))
     {
         message('aboveMax() needs some data')
@@ -447,14 +447,14 @@ okControls <- function(times=NULL, counts=NULL, ids=NULL, dat=NULL, minr2=0.95)
     #' @param minr2 numeric of minimum value of R2 needed for all linear models of data
     #'  must be above; default is 0.95
     #' @return logical of whether all \code{lm} fits to data exceeds \emph{minr2}
-    #' 
+    #'
     #' NOTE: if \emph{dat} is provided, \emph{times}, \emph{counts} and emph{ids} will not be used
     #' @examples
     #' dat <- data.frame( times=1:5, counts=500*2^(1:5), ids=rep('A',5) )
     #' okControls(  dat=dat )
     #' dat <- data.frame( times=1:5, counts=c(500*2^(1:4), 5000), ids=rep('A',5) )
     #' okControls(  dat=dat )
-    #' 
+    #'
     if(all(sapply(c('times','counts','ids','dat'),is.null)))
     {
         message('okControls() needs some data')
