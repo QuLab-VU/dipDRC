@@ -30,6 +30,15 @@ getMXfileInfo <- function(top_dir='/Volumes/quaranta/VDIPRR/HTS004', toFile=FALS
 		if(is.na(d)) return(NA)
 		pid <- gsub('Plate','',basename(MBKfilePath))
 		d$well <- fixWellName(paste0(LETTERS[d$WELL_Y],d$WELL_X))
+        
+        # if z-stack, capture z positions
+        if(any(d$Z_INDEX > 0))
+        {
+            ZSTACK <- TRUE
+            z_pos <- as.integer(gsub('ZStep_','',d$Z_INDEX))
+        }
+
+        # info common to all images in plate
 		plate.info <- unlist(strsplit(d$DIRECTORY[1],'|',fixed=TRUE))[-1]
 		plate.info <- gsub('-Use Current State--','',plate.info)
 		# check whether all columns are present (expecting 5)
@@ -45,22 +54,24 @@ getMXfileInfo <- function(top_dir='/Volumes/quaranta/VDIPRR/HTS004', toFile=FALS
 		}
 		names(plate.info) <- pinames
 		plate.info <- plate.info[pinames]
+		
 		pn <- plate.info['plate_name']
 		image.time <- as.character(strptime(paste0(unlist(strsplit(pn,'-'))[1:2],collapse=""),format='%Y%m%d%H%M%S'))
-		# if image.time not present, extract time of first image and use for entiroe plate
+		# if image.time not present, extract time of first image and use for entire plate
 		temp <- d$T_POSITION
 		if(!is.na(image.time)) plate.info['plate_name'] <- paste0(tail(unlist(strsplit(pn,'-')),-2),collapse="-")
 		plate.info['plate_name'] <- ifelse(plate.info['plate_name']=='',NA,plate.info['plate_name'])
 		d <- d[,c('OBJ_SERVER_NAME','well','SOURCE_DESCRIPTION')]
 		colnames(d) <- c('file_name','well','channel')
+		if(ZSTACK) d$z_pos <- z_pos
+
 		if(is.na(image.time))
 		{ 
 			d$time <- min(strptime(temp, format='%Y-%m-%d %H:%M:%S'))
 		} else { d$time <- image.time }
 		d$time <- as.character(d$time)
-		cbind(d,as.data.frame(t(plate.info)))
+		return(cbind(d,as.data.frame(t(plate.info))))
 	}
-
 	findPlateDir <- function(dirpath)
 	{
 		# find directories in top directory
